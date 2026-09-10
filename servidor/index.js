@@ -159,3 +159,9 @@ export default {
     }
   }
 };
+
+/* ------------------------------------------------------------------
+   Para volver a desplegar este buzón:
+     cd servidor && npx wrangler login && npx wrangler deploy
+   Dirección en servicio: https://encuestas-buzon.popular-metal.workers.dev
+   ------------------------------------------------------------------ */

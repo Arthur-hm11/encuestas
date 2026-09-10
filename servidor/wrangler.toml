@@ -2,5 +2,9 @@ name = "encuestas-buzon"
 main = "index.js"
 compatibility_date = "2026-09-01"
 
+# Almacén de votos. El identificador no es secreto: sin acceso a la
+# cuenta de Cloudflare no sirve de nada. Queda aquí para que volver a
+# desplegar sea un solo comando: npx wrangler deploy
 [[kv_namespaces]]
 binding = "VOTOS"
+id = "49fa2b0eab434d38b304f19293919bde"
