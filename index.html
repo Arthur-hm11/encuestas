@@ -1,54 +1,1021 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="noindex">
-  <title>Encuesta</title>
-  <link rel="stylesheet" href="assets/estilo.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Comanda</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Archivo+Black&display=swap">
+<style>
+:root{
+  --papel:#F5F4F1; --carta:#FFFFFF; --hueco:#EDEBE6;
+  --tinta:#1E1F1C; --suave:#6B6E68; --linea:#DFE0DA;
+  --acento:#1D6B4C; --acento-tenue:#E3EFE9; --acento-tinta:#12503A;
+  --chile:#A6382C; --chile-tenue:#FBEAE7;
+  --sombra:0 1px 2px rgba(30,31,28,.06), 0 8px 24px rgba(30,31,28,.06);
+  --display:"Archivo Black","Archivo",system-ui,sans-serif;
+  --texto:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --papel:#16181A; --carta:#1E2124; --hueco:#26292C;
+    --tinta:#E9EAE5; --suave:#989C96; --linea:#2E3236;
+    --acento:#43B183; --acento-tenue:#17312A; --acento-tinta:#8FD9BB;
+    --chile:#E08074; --chile-tenue:#33201D;
+    --sombra:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.28);
+  }
+}
+:root[data-theme="dark"]{
+  --papel:#16181A; --carta:#1E2124; --hueco:#26292C;
+  --tinta:#E9EAE5; --suave:#989C96; --linea:#2E3236;
+  --acento:#43B183; --acento-tenue:#17312A; --acento-tinta:#8FD9BB;
+  --chile:#E08074; --chile-tenue:#33201D;
+  --sombra:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.28);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; padding:24px 16px 72px;
+  background:var(--papel); color:var(--tinta);
+  font:16px/1.55 var(--texto);
+  -webkit-font-smoothing:antialiased;
+}
+.hoja{max-width:620px; margin:0 auto; display:flex; flex-direction:column; gap:16px}
+
+/* ---------- Encabezado ---------- */
+.marca{display:flex; align-items:baseline; gap:10px; padding:0 2px 4px}
+.marca h1{
+  font:400 27px/1 var(--display); margin:0;
+  letter-spacing:-.015em; text-wrap:balance;
+}
+.marca .glosa{font-size:13px; color:var(--suave)}
+
+/* ---------- Contenedores ---------- */
+.carta{
+  background:var(--carta); border:1px solid var(--linea);
+  border-radius:10px; padding:20px; box-shadow:var(--sombra);
+  display:flex; flex-direction:column; gap:16px;
+}
+.carta > h2{
+  font:600 15px/1.3 var(--texto); margin:0;
+  display:flex; align-items:center; gap:9px;
+}
+.carta > h2 .paso{
+  flex:none; width:22px; height:22px; border-radius:50%;
+  background:var(--acento); color:#fff;
+  font:700 12px/22px var(--texto); text-align:center;
+}
+.nota{font-size:13.5px; color:var(--suave); margin:0; max-width:56ch}
+
+/* ---------- Pasos ---------- */
+.pasos{display:flex; gap:6px; background:var(--hueco); padding:5px; border-radius:11px}
+.pasos button{
+  flex:1; padding:10px 6px; border:0; border-radius:7px;
+  background:transparent; color:var(--suave);
+  font:600 13.5px var(--texto); cursor:pointer;
+  display:flex; align-items:center; justify-content:center; gap:6px;
+}
+.pasos button[aria-selected="true"]{background:var(--carta); color:var(--tinta); box-shadow:var(--sombra)}
+.pasos .cuenta-globo{
+  min-width:19px; padding:0 5px; height:19px; border-radius:10px;
+  background:var(--acento); color:#fff; font:700 11px/19px var(--texto);
+}
+
+/* ---------- Campos ---------- */
+.campo{display:flex; flex-direction:column; gap:6px}
+.campo > label, .rotulo{
+  font:600 12px var(--texto); letter-spacing:.05em;
+  text-transform:uppercase; color:var(--suave);
+}
+input[type=text], input[type=number], textarea{
+  width:100%; padding:11px 13px; font:400 16px var(--texto);
+  color:var(--tinta); background:var(--papel);
+  border:1px solid var(--linea); border-radius:8px;
+}
+textarea{min-height:120px; resize:vertical; line-height:1.5}
+input:focus-visible, textarea:focus-visible, button:focus-visible, a:focus-visible{
+  outline:2px solid var(--acento); outline-offset:2px;
+}
+.pareja{display:flex; gap:12px}
+.pareja > *{flex:1; min-width:0}
+
+/* ---------- Botones ---------- */
+.btn{
+  padding:13px 18px; border:1px solid transparent; border-radius:9px;
+  font:600 15px var(--texto); cursor:pointer; text-align:center;
+  background:var(--acento); color:#fff; text-decoration:none;
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+}
+.btn:disabled{opacity:.42; cursor:not-allowed}
+.btn.calma{background:transparent; color:var(--tinta); border-color:var(--linea)}
+.btn.riesgo{background:transparent; color:var(--chile); border-color:var(--chile)}
+.btn.ancho{width:100%}
+.botonera{display:flex; gap:10px; flex-wrap:wrap}
+.botonera > .btn{flex:1 1 150px}
+
+/* ---------- Contador de piezas ---------- */
+.renglon{
+  display:flex; align-items:center; gap:12px;
+  padding:13px 0; border-bottom:1px solid var(--linea);
+}
+.renglon:last-child{border-bottom:0; padding-bottom:0}
+.renglon .que{flex:1; min-width:0; font-weight:500; overflow-wrap:anywhere}
+.contador{display:flex; align-items:center; gap:3px; flex:none}
+.contador button{
+  width:42px; height:42px; border:0; border-radius:9px;
+  background:var(--acento-tenue); color:var(--acento-tinta);
+  font:400 22px/1 var(--texto); cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.contador button:active:not(:disabled){transform:scale(.93)}
+.contador button:disabled{opacity:.3; cursor:not-allowed}
+.contador .cifra{
+  min-width:46px; text-align:center;
+  font:400 20px var(--display); font-variant-numeric:tabular-nums;
+}
+.contador .cifra.nada{font-family:var(--texto); font-weight:400; color:var(--suave)}
+
+.marcador{
+  padding:13px; border-radius:9px; text-align:center;
+  background:var(--acento-tenue); color:var(--acento-tinta); font-weight:600;
+}
+
+/* ---------- La comanda (papelito de pedido) ---------- */
+.comanda{
+  background:var(--carta); border:1px solid var(--linea); border-radius:6px;
+  padding:24px 22px; box-shadow:var(--sombra);
+  display:flex; flex-direction:column; gap:14px; text-align:center;
+}
+.comanda .sello{
+  font:600 11px var(--texto); letter-spacing:.16em;
+  text-transform:uppercase; color:var(--acento);
+}
+.comanda h2{font:400 24px/1.15 var(--display); margin:0}
+.rasgado{
+  border:0; border-top:2px dashed var(--linea); margin:2px 0;
+}
+.folio{
+  font:500 13px/1.45 var(--mono); word-break:break-all;
+  padding:12px; border-radius:8px;
+  background:var(--papel); border:1px solid var(--linea);
+  color:var(--tinta); text-align:center; width:100%;
+}
+.lista-pedido{
+  display:flex; flex-direction:column; gap:5px;
+  font-size:14.5px; text-align:left;
+}
+.lista-pedido div{display:flex; justify-content:space-between; gap:12px}
+.lista-pedido .cant{font-variant-numeric:tabular-nums; font-weight:600}
+
+/* ---------- Tablas de la cuenta ---------- */
+.rueda{overflow-x:auto; -webkit-overflow-scrolling:touch; margin:0 -4px; padding:0 4px}
+table{width:100%; border-collapse:collapse; font-size:14.5px}
+th,td{padding:9px 8px; text-align:left; border-bottom:1px solid var(--linea)}
+th{
+  font:600 11px var(--texto); letter-spacing:.06em;
+  text-transform:uppercase; color:var(--suave); white-space:nowrap;
+}
+td.n, th.n{text-align:right; font-variant-numeric:tabular-nums}
+tr.suma td{
+  border-top:2px solid var(--tinta); border-bottom:0;
+  font:400 17px var(--display); padding-top:12px;
+}
+tr.suma td:first-child{font:700 14px var(--texto); letter-spacing:.04em; text-transform:uppercase}
+.gris{color:var(--suave)}
+
+.tarjetas{display:grid; grid-template-columns:repeat(auto-fit,minmax(128px,1fr)); gap:10px}
+.tarjeta{padding:14px; border-radius:9px; background:var(--hueco)}
+.tarjeta .rotulo{display:block; margin-bottom:3px}
+.tarjeta .grande{font:400 30px/1.05 var(--display); letter-spacing:-.02em}
+
+/* ---------- Editor de opciones ---------- */
+.opcion-fila{display:flex; gap:8px; align-items:center}
+.opcion-fila input[type=text]{flex:1 1 auto; min-width:0}
+.opcion-fila input[type=number]{flex:0 0 88px; text-align:right}
+.quitar{
+  flex:none; width:36px; height:36px; border:0; border-radius:8px;
+  background:transparent; color:var(--chile); font-size:19px; cursor:pointer;
+}
+.quitar:hover{background:var(--chile-tenue)}
+
+/* ---------- Avisos ---------- */
+.aviso{padding:12px 14px; border-radius:8px; font-size:14.5px}
+.aviso.mal{background:var(--chile-tenue); color:var(--chile)}
+.aviso.bien{background:var(--acento-tenue); color:var(--acento-tinta)}
+.oculto{display:none !important}
+.pie{text-align:center; font-size:12.5px; color:var(--suave); padding-top:6px}
+
+@media (prefers-reduced-motion:reduce){*{animation:none !important; transition:none !important}}
+@media (max-width:400px){
+  .contador button{width:38px; height:38px}
+  .contador .cifra{min-width:38px; font-size:18px}
+}
+</style>
 </head>
 <body>
-  <div class="contenedor">
 
-    <!-- Mientras carga -->
-    <div id="cargando" class="cargando">Cargando encuesta...</div>
+<!-- ================= PANTALLA DE QUIEN VOTA ================= -->
+<main class="hoja oculto" id="pantallaVotar">
 
-    <!-- Formulario -->
-    <div id="formulario" class="tarjeta oculto">
-      <h1 id="titulo"></h1>
-      <p id="subtitulo" class="subtitulo"></p>
+  <div class="carta" id="pedidoForm">
+    <div class="marca" style="padding:0">
+      <h1 id="vTitulo"></h1>
+    </div>
+    <p class="nota" id="vSubtitulo"></p>
 
-      <label for="nombre">Tu nombre</label>
-      <input type="text" id="nombre" placeholder="Escribe tu nombre completo"
-             autocomplete="name" maxlength="60">
-
-      <div id="opciones" style="margin-top:22px"></div>
-
-      <div id="totalVivo" class="total-vivo">Aun no eliges nada</div>
-      <div id="avisoFormulario" class="aviso error oculto"></div>
-
-      <button type="button" id="enviar" class="boton">Enviar mi pedido</button>
+    <div class="campo">
+      <label for="vNombre">Tu nombre</label>
+      <input type="text" id="vNombre" placeholder="Nombre y apellido" autocomplete="name" maxlength="50">
     </div>
 
-    <!-- Confirmacion -->
-    <div id="gracias" class="tarjeta oculto" style="text-align:center">
-      <div style="font-size:52px; line-height:1">&#10003;</div>
-      <h1 id="tituloGracias">&iexcl;Listo!</h1>
-      <p class="subtitulo" id="detalleGracias"></p>
-      <button type="button" id="corregir" class="boton secundario">Corregir mi pedido</button>
-    </div>
+    <div id="vOpciones"></div>
 
-    <!-- Cerrada o error grave -->
-    <div id="bloqueo" class="tarjeta oculto" style="text-align:center">
-      <h1 id="tituloBloqueo"></h1>
-      <p class="subtitulo" id="detalleBloqueo"></p>
-    </div>
-
-    <p class="pie">Tu respuesta solo la ve quien organiza.</p>
+    <div class="marcador" id="vMarcador">Aún no eliges nada</div>
+    <div class="aviso mal oculto" id="vAviso"></div>
+    <button type="button" class="btn ancho" id="vListo" disabled>Listo, generar mi comanda</button>
   </div>
 
-  <script src="assets/config.js"></script>
-  <script src="assets/api.js"></script>
-  <script src="assets/votar.js"></script>
+  <div class="comanda oculto" id="comanda">
+    <span class="sello">Comanda</span>
+    <h2 id="cNombre"></h2>
+    <hr class="rasgado">
+    <div class="lista-pedido" id="cLista"></div>
+    <hr class="rasgado">
+    <p class="nota" style="text-align:center; margin:0 auto">
+      Mándale este folio a quien organiza. Es tu pedido, escrito en corto.
+    </p>
+    <div class="folio" id="cFolio"></div>
+    <div class="botonera">
+      <button type="button" class="btn" id="cWhats">Enviar por WhatsApp</button>
+      <button type="button" class="btn calma" id="cCopiar">Copiar folio</button>
+    </div>
+    <button type="button" class="btn calma ancho" id="cVolver">Cambiar mi pedido</button>
+  </div>
+
+  <p class="pie">Nadie más ve lo que pediste hasta que tú mandes el folio.</p>
+</main>
+
+
+<!-- ================= PANTALLA DE QUIEN ORGANIZA ================= -->
+<main class="hoja oculto" id="pantallaOrganizar">
+
+  <header class="marca">
+    <h1>Comanda</h1>
+    <span class="glosa">encuestas con cantidades</span>
+  </header>
+
+  <div class="pasos" role="tablist">
+    <button type="button" role="tab" id="tabArmar"   aria-selected="true"  aria-controls="panelArmar">Armar</button>
+    <button type="button" role="tab" id="tabRecibir" aria-selected="false" aria-controls="panelRecibir">
+      Recibir <span class="cuenta-globo oculto" id="globoRecibidos">0</span>
+    </button>
+    <button type="button" role="tab" id="tabCuenta"  aria-selected="false" aria-controls="panelCuenta">Cuenta</button>
+  </div>
+
+  <!-- ---------- 1. ARMAR ---------- -->
+  <section id="panelArmar" role="tabpanel" aria-labelledby="tabArmar" style="display:flex; flex-direction:column; gap:16px">
+
+    <div class="carta">
+      <h2><span class="paso">1</span> Arma tu encuesta</h2>
+
+      <div class="campo">
+        <label for="aTitulo">Título</label>
+        <input type="text" id="aTitulo" maxlength="60" placeholder="Tacos de canasta">
+      </div>
+
+      <div class="campo">
+        <label for="aSubtitulo">Instrucción para quien vota</label>
+        <input type="text" id="aSubtitulo" maxlength="90" placeholder="Anota cuántos quieres de cada uno">
+      </div>
+
+      <div class="pareja">
+        <div class="campo">
+          <label for="aMaximo">Máximo por opción</label>
+          <input type="number" id="aMaximo" min="1" max="99">
+        </div>
+        <div class="campo">
+          <label for="aMoneda">Moneda</label>
+          <input type="text" id="aMoneda" maxlength="3">
+        </div>
+      </div>
+    </div>
+
+    <div class="carta">
+      <h2>Opciones y precios</h2>
+      <p class="nota">El precio se queda en este dispositivo. Quien vota solo ve los nombres.</p>
+      <div style="display:flex; flex-direction:column; gap:8px">
+        <div class="opcion-fila" style="padding-right:44px">
+          <span class="rotulo" style="flex:1">Nombre</span>
+          <span class="rotulo" style="flex:0 0 88px; text-align:right">Precio</span>
+        </div>
+        <div id="aOpciones" style="display:flex; flex-direction:column; gap:8px"></div>
+      </div>
+      <button type="button" class="btn calma" id="aAgregar">Agregar opción</button>
+    </div>
+
+    <div class="carta">
+      <h2>Enlace para repartir</h2>
+      <div class="aviso mal oculto" id="aAviso"></div>
+      <div class="folio" id="aEnlace">Pulsa el botón para crearlo.</div>
+      <div class="botonera">
+        <button type="button" class="btn" id="aCrear">Crear enlace</button>
+        <button type="button" class="btn calma" id="aWhats" disabled>WhatsApp</button>
+        <button type="button" class="btn calma" id="aCopiar" disabled>Copiar</button>
+      </div>
+      <p class="nota">
+        Reparte este enlace. Cada persona llenará su comanda y te devolverá un folio.
+      </p>
+    </div>
+  </section>
+
+  <!-- ---------- 2. RECIBIR ---------- -->
+  <section id="panelRecibir" role="tabpanel" aria-labelledby="tabRecibir" class="oculto" style="flex-direction:column; gap:16px">
+
+    <div class="carta">
+      <h2><span class="paso">2</span> Pega los folios que te llegaron</h2>
+      <p class="nota">
+        Puedes pegar la conversación entera de WhatsApp: se sacan solos todos los folios
+        que encuentre. Si alguien manda el suyo dos veces, se queda el último.
+      </p>
+      <textarea id="rTexto" placeholder="Pega aquí lo que te mandaron..."></textarea>
+      <div class="aviso oculto" id="rAviso"></div>
+      <button type="button" class="btn ancho" id="rProcesar">Leer folios</button>
+    </div>
+
+    <div class="carta">
+      <h2>Agregar a mano</h2>
+      <p class="nota">Para quien te conteste de palabra en lugar de mandar su folio.</p>
+      <div class="campo">
+        <label for="mNombre">Nombre</label>
+        <input type="text" id="mNombre" maxlength="50" placeholder="Nombre y apellido">
+      </div>
+      <div id="mOpciones"></div>
+      <button type="button" class="btn calma ancho" id="mAgregar">Anotar este pedido</button>
+    </div>
+
+    <div class="carta">
+      <h2>Pedidos recibidos</h2>
+      <div class="rueda"><table>
+        <thead><tr><th>Persona</th><th class="n">Piezas</th><th></th></tr></thead>
+        <tbody id="rLista"></tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <!-- ---------- 3. CUENTA ---------- -->
+  <section id="panelCuenta" role="tabpanel" aria-labelledby="tabCuenta" class="oculto" style="flex-direction:column; gap:16px">
+
+    <div class="carta">
+      <h2><span class="paso">3</span> <span id="cuTitulo">La cuenta</span></h2>
+      <div class="tarjetas">
+        <div class="tarjeta">
+          <span class="rotulo">Piezas</span>
+          <span class="grande" id="cuPiezas">0</span>
+        </div>
+        <div class="tarjeta">
+          <span class="rotulo">A pagar</span>
+          <span class="grande" id="cuDinero">0</span>
+        </div>
+        <div class="tarjeta">
+          <span class="rotulo">Personas</span>
+          <span class="grande" id="cuGente">0</span>
+        </div>
+      </div>
+      <div class="rueda"><table>
+        <thead><tr><th>Opción</th><th class="n">Cant.</th><th class="n">Precio</th><th class="n">Importe</th></tr></thead>
+        <tbody id="cuCuerpo"></tbody>
+      </table></div>
+    </div>
+
+    <div class="carta">
+      <h2>Quién pidió qué</h2>
+      <div class="rueda"><table>
+        <thead><tr id="cuDetalleCabeza"></tr></thead>
+        <tbody id="cuDetalleCuerpo"></tbody>
+      </table></div>
+    </div>
+
+    <div class="carta">
+      <h2>Guardar</h2>
+      <div class="aviso oculto" id="cuAviso"></div>
+      <button type="button" class="btn ancho" id="cuExcel">Descargar Excel (.xlsx)</button>
+      <p class="nota">
+        Dos hojas: el resumen con importes y el detalle persona por persona.
+      </p>
+      <hr class="rasgado">
+      <button type="button" class="btn riesgo ancho" id="cuLimpiar">Borrar los pedidos y empezar otra</button>
+      <p class="nota">
+        Descarga el Excel antes de borrar: los pedidos solo viven en este dispositivo.
+      </p>
+    </div>
+  </section>
+
+  <p class="pie">Todo se guarda en este navegador. Nada viaja a ningún servidor.</p>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+"use strict";
+
+/* ============================================================
+   Comanda — encuestas con cantidades, sin servidor.
+   El enlace lleva las opciones; el folio lleva la respuesta;
+   los precios y la cuenta no salen nunca de este dispositivo.
+   ============================================================ */
+
+const $ = (id) => document.getElementById(id);
+const LLAVE = "comanda.v1";
+const MARCA_FOLIO = "TK1-";
+
+/* ---------- Texto <-> base64 seguro con acentos ---------- */
+function aBase64(texto) {
+  const bytes = new TextEncoder().encode(texto);
+  let bin = "";
+  bytes.forEach((b) => (bin += String.fromCharCode(b)));
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+function deBase64(codigo) {
+  const bin = atob(codigo.replace(/-/g, "+").replace(/_/g, "/"));
+  const bytes = Uint8Array.from(bin, (c) => c.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+
+/* Huella de la lista de opciones: sirve para detectar folios
+   de una encuesta distinta a la que está armada ahora. */
+function huella(nombres) {
+  const s = nombres.join("|");
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = (h * 16777619) >>> 0;
+  }
+  return h.toString(36).slice(0, 4);
+}
+
+const escapar = (t) => {
+  const d = document.createElement("div");
+  d.textContent = t == null ? "" : String(t);
+  return d.innerHTML;
+};
+const money = (n, m) => (m || "$") + Number(n || 0).toFixed(2);
+
+function avisar(id, texto, clase) {
+  const caja = $(id);
+  caja.className = "aviso " + (clase || "mal");
+  caja.textContent = texto;
+  caja.classList.remove("oculto");
+}
+const callar = (id) => $(id).classList.add("oculto");
+
+async function copiar(texto, boton) {
+  const original = boton.textContent;
+  try {
+    await navigator.clipboard.writeText(texto);
+    boton.textContent = "Copiado";
+  } catch (e) {
+    boton.textContent = "Selecciónalo y copia";
+  }
+  setTimeout(() => (boton.textContent = original), 1800);
+}
+const porWhatsApp = (texto) =>
+  window.open("https://wa.me/?text=" + encodeURIComponent(texto), "_blank", "noopener");
+
+/* ============================================================
+   ESTADO (solo lo usa quien organiza)
+   ============================================================ */
+const PREDETERMINADO = {
+  titulo: "Tacos de canasta",
+  subtitulo: "Anota cuántos quieres de cada uno",
+  maximo: 10,
+  moneda: "$",
+  opciones: [
+    { nombre: "Chicharrón", precio: 12 },
+    { nombre: "Papa con carne", precio: 12 },
+    { nombre: "Adobo", precio: 15 },
+    { nombre: "Frijol", precio: 10 }
+  ]
+};
+
+let ST = { cfg: null, pedidos: [] };
+
+function cargarEstado() {
+  try {
+    const crudo = localStorage.getItem(LLAVE);
+    if (crudo) {
+      const g = JSON.parse(crudo);
+      ST.cfg = g.cfg || structuredClone(PREDETERMINADO);
+      ST.pedidos = Array.isArray(g.pedidos) ? g.pedidos : [];
+      return;
+    }
+  } catch (e) { /* si el navegador bloquea el guardado, seguimos en memoria */ }
+  ST.cfg = structuredClone(PREDETERMINADO);
+  ST.pedidos = [];
+}
+function guardarEstado() {
+  try { localStorage.setItem(LLAVE, JSON.stringify(ST)); } catch (e) {}
+}
+
+const nombresDe = (cfg) => cfg.opciones.map((o) => o.nombre);
+
+/* ============================================================
+   PANTALLA DE QUIEN VOTA
+   ============================================================ */
+let vCfg = null;
+let vCant = [];
+
+function abrirVotacion(carga) {
+  let d;
+  try {
+    d = JSON.parse(deBase64(carga));
+  } catch (e) {
+    return false;
+  }
+  if (!d || !Array.isArray(d.o) || d.o.length === 0) return false;
+
+  vCfg = { titulo: d.t || "Encuesta", subtitulo: d.s || "", maximo: d.m || 10, opciones: d.o, k: d.k };
+  vCant = vCfg.opciones.map(() => 0);
+
+  document.title = vCfg.titulo;
+  $("vTitulo").textContent = vCfg.titulo;
+  $("vSubtitulo").textContent = vCfg.subtitulo;
+
+  $("vOpciones").innerHTML = vCfg.opciones
+    .map(
+      (nombre, i) =>
+        '<div class="renglon">' +
+          '<span class="que">' + escapar(nombre) + "</span>" +
+          '<span class="contador">' +
+            '<button type="button" data-paso="-1" data-i="' + i + '" aria-label="Quitar uno de ' + escapar(nombre) + '">&minus;</button>' +
+            '<span class="cifra nada" id="vc' + i + '">0</span>' +
+            '<button type="button" data-paso="1" data-i="' + i + '" aria-label="Agregar uno de ' + escapar(nombre) + '">+</button>' +
+          "</span>" +
+        "</div>"
+    )
+    .join("");
+
+  $("vOpciones").addEventListener("click", (ev) => {
+    const b = ev.target.closest("button[data-paso]");
+    if (!b) return;
+    const i = +b.dataset.i;
+    const nuevo = vCant[i] + +b.dataset.paso;
+    if (nuevo < 0 || nuevo > vCfg.maximo) return;
+    vCant[i] = nuevo;
+    const celda = $("vc" + i);
+    celda.textContent = nuevo;
+    celda.classList.toggle("nada", nuevo === 0);
+    refrescarMarcador();
+    callar("vAviso");
+  });
+
+  try {
+    const previo = localStorage.getItem("comanda.nombre");
+    if (previo) $("vNombre").value = previo;
+  } catch (e) {}
+
+  $("pantallaVotar").classList.remove("oculto");
+  return true;
+}
+
+function refrescarMarcador() {
+  const total = vCant.reduce((a, b) => a + b, 0);
+  $("vMarcador").textContent = total === 0
+    ? "Aún no eliges nada"
+    : "Tu pedido: " + total + (total === 1 ? " pieza" : " piezas");
+  $("vListo").disabled = total === 0;
+}
+
+function generarComanda() {
+  const nombre = $("vNombre").value.trim().replace(/\s+/g, " ");
+  if (nombre.length < 2) {
+    avisar("vAviso", "Escribe tu nombre para que sepan de quién es el pedido.");
+    $("vNombre").focus();
+    return;
+  }
+  try { localStorage.setItem("comanda.nombre", nombre); } catch (e) {}
+
+  const folio = MARCA_FOLIO + aBase64(JSON.stringify([vCfg.k, nombre, vCant]));
+
+  $("cNombre").textContent = nombre;
+  $("cLista").innerHTML = vCfg.opciones
+    .map((n, i) => (vCant[i] > 0
+      ? "<div><span>" + escapar(n) + '</span><span class="cant">' + vCant[i] + "</span></div>"
+      : ""))
+    .join("") +
+    '<div style="border-top:1px solid var(--linea); padding-top:5px; margin-top:3px">' +
+      "<span><strong>Total</strong></span>" +
+      '<span class="cant">' + vCant.reduce((a, b) => a + b, 0) + "</span></div>";
+  $("cFolio").textContent = folio;
+
+  $("cWhats").onclick = () =>
+    porWhatsApp(vCfg.titulo + " — " + nombre + "\nMi folio:\n" + folio);
+  $("cCopiar").onclick = (ev) => copiar(folio, ev.currentTarget);
+
+  $("pedidoForm").classList.add("oculto");
+  $("comanda").classList.remove("oculto");
+  window.scrollTo(0, 0);
+}
+
+/* ============================================================
+   QUIEN ORGANIZA — 1. ARMAR
+   ============================================================ */
+function pintarArmar() {
+  $("aTitulo").value = ST.cfg.titulo;
+  $("aSubtitulo").value = ST.cfg.subtitulo;
+  $("aMaximo").value = ST.cfg.maximo;
+  $("aMoneda").value = ST.cfg.moneda;
+  pintarOpciones();
+}
+
+function pintarOpciones() {
+  $("aOpciones").innerHTML = ST.cfg.opciones
+    .map(
+      (o, i) =>
+        '<div class="opcion-fila">' +
+          '<input type="text" data-c="nombre" data-i="' + i + '" value="' + escapar(o.nombre) + '" maxlength="34" placeholder="Nombre de la opción">' +
+          '<input type="number" data-c="precio" data-i="' + i + '" value="' + o.precio + '" min="0" step="0.5" aria-label="Precio">' +
+          '<button type="button" class="quitar" data-quitar="' + i + '" aria-label="Quitar ' + escapar(o.nombre) + '">&times;</button>' +
+        "</div>"
+    )
+    .join("");
+}
+
+/** Copia a ST.cfg lo que hay escrito en pantalla. */
+function leerArmar() {
+  ST.cfg.titulo = $("aTitulo").value.trim() || "Encuesta";
+  ST.cfg.subtitulo = $("aSubtitulo").value.trim();
+  ST.cfg.maximo = Math.min(99, Math.max(1, parseInt($("aMaximo").value, 10) || 10));
+  ST.cfg.moneda = $("aMoneda").value.trim().slice(0, 3) || "$";
+  document.querySelectorAll("#aOpciones [data-c]").forEach((campo) => {
+    const o = ST.cfg.opciones[+campo.dataset.i];
+    if (!o) return;
+    if (campo.dataset.c === "nombre") o.nombre = campo.value.trim();
+    else o.precio = Math.max(0, parseFloat(campo.value) || 0);
+  });
+  guardarEstado();
+}
+
+function crearEnlace() {
+  leerArmar();
+  const nombres = nombresDe(ST.cfg).filter((n) => n.length > 0);
+
+  if (nombres.length === 0) {
+    avisar("aAviso", "Escribe al menos una opción antes de crear el enlace.");
+    return;
+  }
+  const repetido = nombres.find((n, i) => nombres.findIndex((x) => x.toLowerCase() === n.toLowerCase()) !== i);
+  if (repetido) {
+    avisar("aAviso", 'La opción "' + repetido + '" está repetida. Cámbiale el nombre.');
+    return;
+  }
+  callar("aAviso");
+
+  ST.cfg.opciones = ST.cfg.opciones.filter((o) => o.nombre.length > 0);
+  guardarEstado();
+  pintarOpciones();
+
+  const carga = aBase64(JSON.stringify({
+    t: ST.cfg.titulo,
+    s: ST.cfg.subtitulo,
+    m: ST.cfg.maximo,
+    k: huella(nombres),
+    o: nombres
+  }));
+
+  const base = location.origin + location.pathname;
+  const enlace = base + "#v=" + carga;
+
+  $("aEnlace").textContent = enlace;
+  $("aCopiar").disabled = false;
+  $("aWhats").disabled = false;
+  $("aCopiar").onclick = (ev) => copiar(enlace, ev.currentTarget);
+  $("aWhats").onclick = () =>
+    porWhatsApp(ST.cfg.titulo + "\n" + (ST.cfg.subtitulo || "Anota lo tuyo aquí") + "\n" + enlace);
+
+  pintarManual();
+  refrescarTodo();
+}
+
+/* ============================================================
+   2. RECIBIR
+   ============================================================ */
+function leerFolios() {
+  const texto = $("rTexto").value;
+  const encontrados = texto.match(new RegExp(MARCA_FOLIO + "[A-Za-z0-9_-]+", "g")) || [];
+
+  if (encontrados.length === 0) {
+    avisar("rAviso", "No encontré ningún folio en ese texto. Los folios empiezan con " + MARCA_FOLIO);
+    return;
+  }
+
+  const huellaActual = huella(nombresDe(ST.cfg));
+  let nuevos = 0, repetidos = 0, ilegibles = 0, ajenos = 0;
+
+  encontrados.forEach((folio) => {
+    let d;
+    try {
+      d = JSON.parse(deBase64(folio.slice(MARCA_FOLIO.length)));
+    } catch (e) { ilegibles++; return; }
+
+    if (!Array.isArray(d) || d.length !== 3 || typeof d[1] !== "string" || !Array.isArray(d[2])) {
+      ilegibles++; return;
+    }
+    if (d[0] !== huellaActual) { ajenos++; return; }
+
+    const nombre = d[1].trim().replace(/\s+/g, " ").slice(0, 50);
+    const cants = ST.cfg.opciones.map((_, i) => Math.max(0, parseInt(d[2][i], 10) || 0));
+    const clave = nombre.toLowerCase();
+    const yaEsta = ST.pedidos.findIndex((p) => p.nombre.toLowerCase() === clave);
+
+    const pedido = { nombre, cants, cuando: new Date().toISOString() };
+    if (yaEsta >= 0) { ST.pedidos[yaEsta] = pedido; repetidos++; }
+    else { ST.pedidos.push(pedido); nuevos++; }
+  });
+
+  guardarEstado();
+  refrescarTodo();
+  $("rTexto").value = "";
+
+  const partes = [];
+  if (nuevos) partes.push(nuevos + (nuevos === 1 ? " pedido nuevo" : " pedidos nuevos"));
+  if (repetidos) partes.push(repetidos + (repetidos === 1 ? " actualizado" : " actualizados"));
+  if (ajenos) partes.push(ajenos + " de otra encuesta (no se " + (ajenos === 1 ? "contó)" : "contaron)"));
+  if (ilegibles) partes.push(ilegibles + (ilegibles === 1 ? " que no se entendió" : " que no se entendieron"));
+
+  avisar("rAviso", partes.join(", ") + ".", nuevos || repetidos ? "bien" : "mal");
+}
+
+function pintarManual() {
+  $("mOpciones").innerHTML = ST.cfg.opciones
+    .map(
+      (o, i) =>
+        '<div class="renglon">' +
+          '<span class="que">' + escapar(o.nombre) + "</span>" +
+          '<input type="number" id="mq' + i + '" value="0" min="0" max="' + ST.cfg.maximo +
+            '" style="flex:0 0 76px; text-align:right" aria-label="Cantidad de ' + escapar(o.nombre) + '">' +
+        "</div>"
+    )
+    .join("");
+}
+
+function agregarAMano() {
+  const nombre = $("mNombre").value.trim().replace(/\s+/g, " ");
+  if (nombre.length < 2) { avisar("rAviso", "Escribe el nombre de la persona."); return; }
+
+  const cants = ST.cfg.opciones.map((_, i) =>
+    Math.min(ST.cfg.maximo, Math.max(0, parseInt($("mq" + i).value, 10) || 0)));
+
+  if (cants.reduce((a, b) => a + b, 0) === 0) {
+    avisar("rAviso", "Anota al menos una pieza para " + nombre + ".");
+    return;
+  }
+
+  const clave = nombre.toLowerCase();
+  const yaEsta = ST.pedidos.findIndex((p) => p.nombre.toLowerCase() === clave);
+  const pedido = { nombre, cants, cuando: new Date().toISOString() };
+  if (yaEsta >= 0) ST.pedidos[yaEsta] = pedido; else ST.pedidos.push(pedido);
+
+  guardarEstado();
+  refrescarTodo();
+  $("mNombre").value = "";
+  pintarManual();
+  avisar("rAviso", "Anotado el pedido de " + nombre + ".", "bien");
+}
+
+function pintarRecibidos() {
+  const cuerpo = $("rLista");
+  if (ST.pedidos.length === 0) {
+    cuerpo.innerHTML = '<tr><td colspan="3" class="gris">Todavía no llega ningún pedido.</td></tr>';
+  } else {
+    cuerpo.innerHTML = ST.pedidos
+      .map((p, i) =>
+        "<tr><td>" + escapar(p.nombre) + '</td><td class="n">' + p.cants.reduce((a, b) => a + b, 0) +
+        '</td><td style="text-align:right"><button type="button" class="quitar" data-borrar="' + i +
+        '" aria-label="Quitar el pedido de ' + escapar(p.nombre) + '">&times;</button></td></tr>')
+      .join("");
+  }
+
+  const globo = $("globoRecibidos");
+  globo.textContent = ST.pedidos.length;
+  globo.classList.toggle("oculto", ST.pedidos.length === 0);
+}
+
+/* ============================================================
+   3. LA CUENTA
+   ============================================================ */
+function calcular() {
+  const m = ST.cfg.moneda;
+  const renglones = ST.cfg.opciones.map((o, i) => {
+    const cantidad = ST.pedidos.reduce((s, p) => s + (p.cants[i] || 0), 0);
+    return { nombre: o.nombre, precio: o.precio, cantidad, importe: cantidad * o.precio };
+  });
+  return {
+    moneda: m,
+    renglones,
+    piezas: renglones.reduce((s, r) => s + r.cantidad, 0),
+    dinero: renglones.reduce((s, r) => s + r.importe, 0),
+    gente: ST.pedidos.length
+  };
+}
+
+function pintarCuenta() {
+  const c = calcular();
+
+  $("cuTitulo").textContent = ST.cfg.titulo;
+  $("cuPiezas").textContent = c.piezas;
+  $("cuDinero").textContent = money(c.dinero, c.moneda);
+  $("cuGente").textContent = c.gente;
+
+  $("cuCuerpo").innerHTML =
+    c.renglones
+      .map((r) =>
+        "<tr><td>" + escapar(r.nombre) +
+        '</td><td class="n' + (r.cantidad ? '"' : ' gris"') + ">" + r.cantidad +
+        '</td><td class="n gris">' + money(r.precio, c.moneda) +
+        '</td><td class="n">' + money(r.importe, c.moneda) + "</td></tr>")
+      .join("") +
+    '<tr class="suma"><td>Total</td><td class="n">' + c.piezas +
+    '</td><td></td><td class="n">' + money(c.dinero, c.moneda) + "</td></tr>";
+
+  $("cuDetalleCabeza").innerHTML =
+    "<th>Persona</th>" +
+    ST.cfg.opciones.map((o) => '<th class="n">' + escapar(o.nombre) + "</th>").join("") +
+    '<th class="n">Total</th>';
+
+  $("cuDetalleCuerpo").innerHTML = ST.pedidos.length === 0
+    ? '<tr><td colspan="' + (ST.cfg.opciones.length + 2) + '" class="gris">Aquí aparecerá quién pidió qué.</td></tr>'
+    : ST.pedidos
+        .map((p) =>
+          "<tr><td>" + escapar(p.nombre) + "</td>" +
+          p.cants.map((n) => '<td class="n' + (n ? '"' : ' gris"') + ">" + n + "</td>").join("") +
+          '<td class="n"><strong>' + p.cants.reduce((a, b) => a + b, 0) + "</strong></td></tr>")
+        .join("");
+}
+
+const refrescarTodo = () => { pintarRecibidos(); pintarCuenta(); };
+
+/* ============================================================
+   EXCEL
+   ============================================================ */
+function armarLibro() {
+  const c = calcular();
+
+  const resumen = [["Encuesta", ST.cfg.titulo], ["Fecha", new Date().toLocaleString("es-MX")], [],
+                   ["Opción", "Cantidad", "Precio unitario", "Importe"]];
+  c.renglones.forEach((r) => resumen.push([r.nombre, r.cantidad, r.precio, r.importe]));
+  resumen.push([], ["TOTAL", c.piezas, "", c.dinero], ["Personas", c.gente], ["Moneda", c.moneda]);
+
+  const detalle = [["Persona"].concat(ST.cfg.opciones.map((o) => o.nombre)).concat(["Total"])];
+  ST.pedidos.forEach((p) =>
+    detalle.push([p.nombre].concat(p.cants).concat([p.cants.reduce((a, b) => a + b, 0)])));
+
+  const libro = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(libro, XLSX.utils.aoa_to_sheet(resumen), "Resumen");
+  XLSX.utils.book_append_sheet(libro, XLSX.utils.aoa_to_sheet(detalle), "Detalle");
+  return libro;
+}
+
+function nombreArchivo() {
+  const limpio = ST.cfg.titulo.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^A-Za-z0-9 ]/g, "").trim().replace(/\s+/g, "-") || "encuesta";
+  return limpio + "_" + new Date().toISOString().slice(0, 10) + ".xlsx";
+}
+
+async function descargarExcel() {
+  callar("cuAviso");
+  if (ST.pedidos.length === 0) {
+    avisar("cuAviso", "Todavía no hay pedidos que guardar.");
+    return;
+  }
+  if (typeof XLSX === "undefined") {
+    avisar("cuAviso", "No se pudo cargar el generador de Excel. Revisa tu conexión y recarga la página.");
+    return;
+  }
+
+  const libro = armarLibro();
+  const archivo = nombreArchivo();
+
+  // Dentro de claude.ai la descarga pasa por el visor; fuera, va directa.
+  let guardador = null;
+  try {
+    if (window.claude && typeof window.claude.use === "function") {
+      guardador = await window.claude.use("downloads");
+    }
+  } catch (e) {}
+
+  if (guardador) {
+    try {
+      const bytes = XLSX.write(libro, { type: "array", bookType: "xlsx" });
+      await guardador.save({ filename: archivo, data: new Blob([bytes]) });
+      avisar("cuAviso", "Excel guardado como " + archivo, "bien");
+    } catch (e) {
+      if (e && e.code === "declined") return;
+      avisar("cuAviso", "No se pudo guardar el archivo. Intenta otra vez.");
+    }
+    return;
+  }
+
+  try {
+    XLSX.writeFile(libro, archivo);
+    avisar("cuAviso", "Excel descargado: " + archivo, "bien");
+  } catch (e) {
+    avisar("cuAviso", "Tu navegador bloqueó la descarga. Prueba en otro navegador.");
+  }
+}
+
+/* ============================================================
+   PASOS Y BOTONES
+   ============================================================ */
+const PANELES = [["tabArmar", "panelArmar"], ["tabRecibir", "panelRecibir"], ["tabCuenta", "panelCuenta"]];
+
+function mostrarPaso(idTab) {
+  PANELES.forEach(([tab, panel]) => {
+    const activo = tab === idTab;
+    $(tab).setAttribute("aria-selected", activo ? "true" : "false");
+    $(panel).classList.toggle("oculto", !activo);
+    $(panel).style.display = activo ? "flex" : "";
+  });
+  window.scrollTo(0, 0);
+}
+
+function conectarOrganizar() {
+  pintarArmar();
+  pintarManual();
+  refrescarTodo();
+
+  PANELES.forEach(([tab]) =>
+    $(tab).addEventListener("click", () => { leerArmar(); pintarManual(); refrescarTodo(); mostrarPaso(tab); }));
+
+  $("aAgregar").addEventListener("click", () => {
+    leerArmar();
+    ST.cfg.opciones.push({ nombre: "", precio: 0 });
+    guardarEstado();
+    pintarOpciones();
+    const campos = document.querySelectorAll('#aOpciones [data-c="nombre"]');
+    if (campos.length) campos[campos.length - 1].focus();
+  });
+
+  $("aOpciones").addEventListener("click", (ev) => {
+    const b = ev.target.closest("[data-quitar]");
+    if (!b) return;
+    leerArmar();
+    ST.cfg.opciones.splice(+b.dataset.quitar, 1);
+    if (ST.cfg.opciones.length === 0) ST.cfg.opciones.push({ nombre: "", precio: 0 });
+    guardarEstado();
+    pintarOpciones();
+    pintarManual();
+    refrescarTodo();
+  });
+
+  $("aCrear").addEventListener("click", crearEnlace);
+  $("rProcesar").addEventListener("click", leerFolios);
+  $("mAgregar").addEventListener("click", agregarAMano);
+
+  $("rLista").addEventListener("click", (ev) => {
+    const b = ev.target.closest("[data-borrar]");
+    if (!b) return;
+    ST.pedidos.splice(+b.dataset.borrar, 1);
+    guardarEstado();
+    refrescarTodo();
+  });
+
+  $("cuExcel").addEventListener("click", descargarExcel);
+
+  $("cuLimpiar").addEventListener("click", () => {
+    if (ST.pedidos.length === 0) { avisar("cuAviso", "No hay pedidos que borrar."); return; }
+    if (!window.confirm("Se borrarán los " + ST.pedidos.length +
+        " pedidos de este dispositivo. ¿Descargaste ya el Excel?")) return;
+    ST.pedidos = [];
+    guardarEstado();
+    refrescarTodo();
+    avisar("cuAviso", "Listo. Ya puedes armar la siguiente encuesta.", "bien");
+  });
+
+  $("pantallaOrganizar").classList.remove("oculto");
+}
+
+/* ============================================================
+   ARRANQUE
+   ============================================================ */
+$("vListo").addEventListener("click", generarComanda);
+$("cVolver").addEventListener("click", () => {
+  $("comanda").classList.add("oculto");
+  $("pedidoForm").classList.remove("oculto");
+  window.scrollTo(0, 0);
+});
+
+// Si el ancla cambia sin recargar (alguien pega el enlace estando ya aqui),
+// volvemos a arrancar para que aparezca la pantalla correcta.
+window.addEventListener("hashchange", () => location.reload());
+
+(function arrancar() {
+  const carga = (location.hash.match(/[#&]v=([A-Za-z0-9_-]+)/) || [])[1];
+  if (carga && abrirVotacion(carga)) return;
+  cargarEstado();
+  conectarOrganizar();
+})();
+</script>
 </body>
 </html>
