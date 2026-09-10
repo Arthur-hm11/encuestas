@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Encuesta</title>
+  <link rel="stylesheet" href="assets/estilo.css">
+</head>
+<body>
+  <div class="contenedor">
+
+    <!-- Mientras carga -->
+    <div id="cargando" class="cargando">Cargando encuesta...</div>
+
+    <!-- Formulario -->
+    <div id="formulario" class="tarjeta oculto">
+      <h1 id="titulo"></h1>
+      <p id="subtitulo" class="subtitulo"></p>
+
+      <label for="nombre">Tu nombre</label>
+      <input type="text" id="nombre" placeholder="Escribe tu nombre completo"
+             autocomplete="name" maxlength="60">
+
+      <div id="opciones" style="margin-top:22px"></div>
+
+      <div id="totalVivo" class="total-vivo">Aun no eliges nada</div>
+      <div id="avisoFormulario" class="aviso error oculto"></div>
+
+      <button type="button" id="enviar" class="boton">Enviar mi pedido</button>
+    </div>
+
+    <!-- Confirmacion -->
+    <div id="gracias" class="tarjeta oculto" style="text-align:center">
+      <div style="font-size:52px; line-height:1">&#10003;</div>
+      <h1 id="tituloGracias">&iexcl;Listo!</h1>
+      <p class="subtitulo" id="detalleGracias"></p>
+      <button type="button" id="corregir" class="boton secundario">Corregir mi pedido</button>
+    </div>
+
+    <!-- Cerrada o error grave -->
+    <div id="bloqueo" class="tarjeta oculto" style="text-align:center">
+      <h1 id="tituloBloqueo"></h1>
+      <p class="subtitulo" id="detalleBloqueo"></p>
+    </div>
+
+    <p class="pie">Tu respuesta solo la ve quien organiza.</p>
+  </div>
+
+  <script src="assets/config.js"></script>
+  <script src="assets/api.js"></script>
+  <script src="assets/votar.js"></script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+.DS_Store
+node_modules/
+*.log
+
+# NUNCA subir copias del script que ya lleven tu contrasena real.
+# Si quieres guardar una copia local con tu contrasena, nombrala asi:
+google-apps-script/*.local.gs
+assets/config.local.js
