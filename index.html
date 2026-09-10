@@ -401,6 +401,15 @@ tr.suma td:first-child{font:400 15px var(--display); letter-spacing:.01em}
     <button type="button" class="btn calma ancho" id="cVolver">Cambiar mi pedido</button>
   </div>
 
+  <div class="comanda oculto" id="caducado">
+    <div class="palomita" aria-hidden="true" style="background:var(--chile); box-shadow:0 0 0 7px var(--chile-tenue)">!</div>
+    <h2>Este enlace ya no sirve</h2>
+    <p class="nota" style="text-align:center; margin:0 auto">
+      Quien organiza cambió la encuesta y creó un enlace nuevo.
+      Pídeselo y vuelve a entrar.
+    </p>
+  </div>
+
   <p class="pie">Solo quien organiza ve los pedidos.</p>
 </main>
 
@@ -1232,7 +1241,18 @@ window.addEventListener("hashchange", () => location.reload());
 
 (function arrancar() {
   const carga = (location.hash.match(/[#&]v=([A-Za-z0-9_-]+)/) || [])[1];
-  if (carga && abrirVotacion(carga)) return;
+
+  if (carga) {
+    // Viene de un enlace de votación. Si no se puede abrir (enlace viejo
+    // o estropeado) se avisa, pero NUNCA se enseña el panel de quien organiza.
+    if (abrirVotacion(carga)) return;
+    document.title = "Enlace caducado";
+    $("pedidoForm").classList.add("oculto");
+    $("caducado").classList.remove("oculto");
+    $("pantallaVotar").classList.remove("oculto");
+    return;
+  }
+
   cargarEstado();
   conectarOrganizar();
 })();
