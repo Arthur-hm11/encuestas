@@ -10,70 +10,75 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Archivo+Black&display=swap">
 <style>
 :root{
-  --papel:#F5F4F1; --carta:#FFFFFF; --hueco:#EDEBE6;
-  --tinta:#1E1F1C; --suave:#6B6E68; --linea:#DFE0DA;
-  --acento:#1D6B4C; --acento-tenue:#E3EFE9; --acento-tinta:#12503A;
-  --chile:#A6382C; --chile-tenue:#FBEAE7;
-  --sombra:0 1px 2px rgba(30,31,28,.06), 0 8px 24px rgba(30,31,28,.06);
+  --papel:#FDF8F0; --carta:#FFFFFF; --hueco:#F3EDE2;
+  --tinta:#2A2119; --suave:#7C7264; --linea:#E6DCCB;
+  --rosa:#D81E7B; --rosa-tenue:#FCE9F2; --rosa-honda:#A5145C;
+  --verde:#14785A; --verde-tenue:#E4F2ED;
+  --sol:#F2B705;
+  --chile:#B33A28; --chile-tenue:#FBEBE7;
+  --sombra:0 1px 2px rgba(42,33,25,.05), 0 10px 30px rgba(42,33,25,.07);
   --display:"Archivo Black","Archivo",system-ui,sans-serif;
   --texto:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  /* alias que usa el resto de la app */
+  --acento:var(--rosa); --acento-tenue:var(--rosa-tenue); --acento-tinta:var(--rosa-honda);
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
-    --papel:#16181A; --carta:#1E2124; --hueco:#26292C;
-    --tinta:#E9EAE5; --suave:#989C96; --linea:#2E3236;
-    --acento:#43B183; --acento-tenue:#17312A; --acento-tinta:#8FD9BB;
-    --chile:#E08074; --chile-tenue:#33201D;
-    --sombra:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.28);
+    --papel:#191512; --carta:#231D19; --hueco:#2C2521;
+    --tinta:#F2EAE0; --suave:#A2958A; --linea:#3A312B;
+    --rosa:#FF5CA8; --rosa-tenue:#3A1728; --rosa-honda:#FFA8CE;
+    --verde:#3FBE93; --verde-tenue:#16332A;
+    --sol:#FFC93C;
+    --chile:#F08A76; --chile-tenue:#3A211B;
+    --sombra:0 1px 2px rgba(0,0,0,.5), 0 10px 30px rgba(0,0,0,.32);
   }
 }
 :root[data-theme="dark"]{
-  --papel:#16181A; --carta:#1E2124; --hueco:#26292C;
-  --tinta:#E9EAE5; --suave:#989C96; --linea:#2E3236;
-  --acento:#43B183; --acento-tenue:#17312A; --acento-tinta:#8FD9BB;
-  --chile:#E08074; --chile-tenue:#33201D;
-  --sombra:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.28);
+  --papel:#191512; --carta:#231D19; --hueco:#2C2521;
+  --tinta:#F2EAE0; --suave:#A2958A; --linea:#3A312B;
+  --rosa:#FF5CA8; --rosa-tenue:#3A1728; --rosa-honda:#FFA8CE;
+  --verde:#3FBE93; --verde-tenue:#16332A;
+  --sol:#FFC93C;
+  --chile:#F08A76; --chile-tenue:#3A211B;
+  --sombra:0 1px 2px rgba(0,0,0,.5), 0 10px 30px rgba(0,0,0,.32);
 }
 
 *{box-sizing:border-box}
 body{
-  margin:0; padding:24px 16px 72px;
+  margin:0; padding:0 16px 72px;
   background:var(--papel); color:var(--tinta);
   font:16px/1.55 var(--texto);
   -webkit-font-smoothing:antialiased;
 }
 .hoja{max-width:620px; margin:0 auto; display:flex; flex-direction:column; gap:16px}
+#pantallaOrganizar{padding-top:24px}
+
+/* ---------- Papel picado ---------- */
+.picado{display:block; width:100%; height:34px; margin:0 0 4px; flex:none}
 
 /* ---------- Encabezado ---------- */
 .marca{display:flex; align-items:baseline; gap:10px; padding:0 2px 4px}
-.marca h1{
-  font:400 27px/1 var(--display); margin:0;
-  letter-spacing:-.015em; text-wrap:balance;
-}
+.marca h1{font:400 27px/1 var(--display); margin:0; letter-spacing:-.015em; text-wrap:balance}
 .marca .glosa{font-size:13px; color:var(--suave)}
 
 /* ---------- Contenedores ---------- */
 .carta{
   background:var(--carta); border:1px solid var(--linea);
-  border-radius:10px; padding:20px; box-shadow:var(--sombra);
+  border-radius:12px; padding:20px; box-shadow:var(--sombra);
   display:flex; flex-direction:column; gap:16px;
 }
-.carta > h2{
-  font:600 15px/1.3 var(--texto); margin:0;
-  display:flex; align-items:center; gap:9px;
-}
+.carta > h2{font:600 15px/1.3 var(--texto); margin:0; display:flex; align-items:center; gap:9px}
 .carta > h2 .paso{
   flex:none; width:22px; height:22px; border-radius:50%;
-  background:var(--acento); color:#fff;
-  font:700 12px/22px var(--texto); text-align:center;
+  background:var(--rosa); color:#fff; font:700 12px/22px var(--texto); text-align:center;
 }
 .nota{font-size:13.5px; color:var(--suave); margin:0; max-width:56ch}
 
 /* ---------- Pasos ---------- */
-.pasos{display:flex; gap:6px; background:var(--hueco); padding:5px; border-radius:11px}
+.pasos{display:flex; gap:6px; background:var(--hueco); padding:5px; border-radius:12px}
 .pasos button{
-  flex:1; padding:10px 6px; border:0; border-radius:7px;
+  flex:1; padding:10px 6px; border:0; border-radius:8px;
   background:transparent; color:var(--suave);
   font:600 13.5px var(--texto); cursor:pointer;
   display:flex; align-items:center; justify-content:center; gap:6px;
@@ -81,7 +86,7 @@ body{
 .pasos button[aria-selected="true"]{background:var(--carta); color:var(--tinta); box-shadow:var(--sombra)}
 .pasos .cuenta-globo{
   min-width:19px; padding:0 5px; height:19px; border-radius:10px;
-  background:var(--acento); color:#fff; font:700 11px/19px var(--texto);
+  background:var(--rosa); color:#fff; font:700 11px/19px var(--texto);
 }
 
 /* ---------- Campos ---------- */
@@ -91,105 +96,135 @@ body{
   text-transform:uppercase; color:var(--suave);
 }
 input[type=text], input[type=number], textarea{
-  width:100%; padding:11px 13px; font:400 16px var(--texto);
+  width:100%; padding:12px 14px; font:400 16px var(--texto);
   color:var(--tinta); background:var(--papel);
-  border:1px solid var(--linea); border-radius:8px;
+  border:1.5px solid var(--linea); border-radius:9px;
 }
+input::placeholder{color:var(--suave); opacity:.75}
 textarea{min-height:120px; resize:vertical; line-height:1.5}
 input:focus-visible, textarea:focus-visible, button:focus-visible, a:focus-visible{
-  outline:2px solid var(--acento); outline-offset:2px;
+  outline:2.5px solid var(--rosa); outline-offset:2px;
 }
 .pareja{display:flex; gap:12px}
 .pareja > *{flex:1; min-width:0}
 
+/* ---------- Contador ---------- */
+.renglon{
+  display:flex; align-items:center; gap:12px;
+  padding:12px 0; border-bottom:1px solid var(--linea);
+}
+.renglon:last-child{border-bottom:0; padding-bottom:0}
+.renglon .que{flex:1; min-width:0; font-weight:500; overflow-wrap:anywhere}
+.contador{display:flex; align-items:center; gap:6px; flex:none}
+.contador button{
+  width:42px; height:42px; border:1.5px solid var(--linea); border-radius:50%;
+  background:var(--carta); color:var(--tinta);
+  font:400 21px/1 var(--texto); cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  transition:transform .09s ease, background .15s ease, border-color .15s ease;
+}
+.contador button:hover:not(:disabled){border-color:var(--rosa); color:var(--rosa)}
+.contador button:active:not(:disabled){transform:scale(.9)}
+.contador button:disabled{opacity:.3; cursor:not-allowed}
+.contador .cifra{
+  min-width:44px; height:34px; border-radius:9px; text-align:center;
+  font:400 19px/34px var(--display); font-variant-numeric:tabular-nums;
+  background:var(--rosa); color:#fff;
+  transition:background .15s ease, color .15s ease;
+}
+.contador .cifra.nada{
+  background:transparent; color:var(--suave);
+  font-family:var(--texto); font-weight:400;
+}
+
+.marcador{
+  padding:14px; border-radius:10px; text-align:center;
+  background:var(--hueco); color:var(--suave); font-weight:600;
+  transition:background .2s ease, color .2s ease;
+}
+.marcador.lleno{background:var(--verde-tenue); color:var(--verde)}
+
 /* ---------- Botones ---------- */
 .btn{
-  padding:13px 18px; border:1px solid transparent; border-radius:9px;
+  padding:14px 18px; border:1.5px solid transparent; border-radius:10px;
   font:600 15px var(--texto); cursor:pointer; text-align:center;
-  background:var(--acento); color:#fff; text-decoration:none;
+  background:var(--rosa); color:#fff; text-decoration:none;
   display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  transition:transform .09s ease, filter .15s ease;
 }
-.btn:disabled{opacity:.42; cursor:not-allowed}
-.btn.calma{background:transparent; color:var(--tinta); border-color:var(--linea)}
+.btn:hover:not(:disabled){filter:brightness(1.07)}
+.btn:active:not(:disabled){transform:translateY(1px)}
+.btn:disabled{opacity:.4; cursor:not-allowed}
+.btn.calma{background:var(--carta); color:var(--tinta); border-color:var(--linea)}
 .btn.riesgo{background:transparent; color:var(--chile); border-color:var(--chile)}
 .btn.ancho{width:100%}
 .botonera{display:flex; gap:10px; flex-wrap:wrap}
 .botonera > .btn{flex:1 1 150px}
 
-/* ---------- Contador de piezas ---------- */
-.renglon{
-  display:flex; align-items:center; gap:12px;
-  padding:13px 0; border-bottom:1px solid var(--linea);
+/* ---------- Pantalla de quien vota ---------- */
+#pantallaVotar{padding-top:0}
+.cabeza-pedido{display:flex; flex-direction:column; gap:7px}
+.sello{
+  align-self:flex-start; padding:5px 11px; border-radius:6px;
+  border:1.5px solid var(--rosa); color:var(--rosa);
+  font:700 10.5px var(--texto); letter-spacing:.17em; text-transform:uppercase;
+  transform:rotate(-1.6deg);
 }
-.renglon:last-child{border-bottom:0; padding-bottom:0}
-.renglon .que{flex:1; min-width:0; font-weight:500; overflow-wrap:anywhere}
-.contador{display:flex; align-items:center; gap:3px; flex:none}
-.contador button{
-  width:42px; height:42px; border:0; border-radius:9px;
-  background:var(--acento-tenue); color:var(--acento-tinta);
-  font:400 22px/1 var(--texto); cursor:pointer;
-  -webkit-tap-highlight-color:transparent;
+.cabeza-pedido h1{
+  font:400 clamp(28px, 8vw, 36px)/1.07 var(--display);
+  margin:2px 0 0; letter-spacing:-.025em; text-wrap:balance;
 }
-.contador button:active:not(:disabled){transform:scale(.93)}
-.contador button:disabled{opacity:.3; cursor:not-allowed}
-.contador .cifra{
-  min-width:46px; text-align:center;
-  font:400 20px var(--display); font-variant-numeric:tabular-nums;
-}
-.contador .cifra.nada{font-family:var(--texto); font-weight:400; color:var(--suave)}
+.cabeza-pedido p{margin:0; color:var(--suave); font-size:15px}
+.pista{font-size:12.5px; color:var(--suave); margin:0}
 
-.marcador{
-  padding:13px; border-radius:9px; text-align:center;
-  background:var(--acento-tenue); color:var(--acento-tinta); font-weight:600;
-}
-
-/* ---------- La comanda (papelito de pedido) ---------- */
+/* ---------- La comanda ---------- */
 .comanda{
-  background:var(--carta); border:1px solid var(--linea); border-radius:6px;
-  padding:24px 22px; box-shadow:var(--sombra);
-  display:flex; flex-direction:column; gap:14px; text-align:center;
+  position:relative; background:var(--carta); border:0; border-radius:5px;
+  padding:34px 24px; box-shadow:var(--sombra);
+  display:flex; flex-direction:column; gap:15px; text-align:center;
+  animation:sale .38s cubic-bezier(.2,.8,.25,1) both;
 }
-.comanda .sello{
-  font:600 11px var(--texto); letter-spacing:.16em;
-  text-transform:uppercase; color:var(--acento);
+.comanda::before, .comanda::after{
+  content:""; position:absolute; left:0; right:0; height:11px; pointer-events:none;
+  background:radial-gradient(circle at 5.5px 0, var(--papel) 5.4px, transparent 5.9px) repeat-x;
+  background-size:11px 11px;
 }
-.comanda h2{font:400 24px/1.15 var(--display); margin:0}
-.rasgado{
-  border:0; border-top:2px dashed var(--linea); margin:2px 0;
+.comanda::before{top:0}
+.comanda::after{bottom:0; transform:rotate(180deg)}
+@keyframes sale{from{opacity:0; transform:translateY(14px)} to{opacity:1; transform:none}}
+
+.comanda .palomita{
+  width:52px; height:52px; margin:0 auto; border-radius:50%;
+  background:var(--verde-tenue); color:var(--verde);
+  font:400 27px/52px var(--texto);
 }
+.comanda h2{font:400 25px/1.15 var(--display); margin:0; letter-spacing:-.02em; text-wrap:balance}
+.rasgado{border:0; border-top:2px dashed var(--linea); margin:1px 0; width:100%}
 .folio{
-  font:500 13px/1.45 var(--mono); word-break:break-all;
-  padding:12px; border-radius:8px;
-  background:var(--papel); border:1px solid var(--linea);
+  font:500 12.5px/1.5 var(--mono); word-break:break-all;
+  padding:13px; border-radius:8px;
+  background:var(--papel); border:1.5px dashed var(--linea);
   color:var(--tinta); text-align:center; width:100%;
 }
-.lista-pedido{
-  display:flex; flex-direction:column; gap:5px;
-  font-size:14.5px; text-align:left;
-}
+.lista-pedido{display:flex; flex-direction:column; gap:7px; font-size:15.5px; text-align:left}
 .lista-pedido div{display:flex; justify-content:space-between; gap:12px}
-.lista-pedido .cant{font-variant-numeric:tabular-nums; font-weight:600}
+.lista-pedido .cant{font-variant-numeric:tabular-nums; font-weight:700; color:var(--rosa)}
 
-/* ---------- Tablas de la cuenta ---------- */
+/* ---------- Tablas ---------- */
 .rueda{overflow-x:auto; -webkit-overflow-scrolling:touch; margin:0 -4px; padding:0 4px}
 table{width:100%; border-collapse:collapse; font-size:14.5px}
 th,td{padding:9px 8px; text-align:left; border-bottom:1px solid var(--linea)}
-th{
-  font:600 11px var(--texto); letter-spacing:.06em;
-  text-transform:uppercase; color:var(--suave); white-space:nowrap;
-}
+th{font:600 11px var(--texto); letter-spacing:.06em; text-transform:uppercase; color:var(--suave); white-space:nowrap}
 td.n, th.n{text-align:right; font-variant-numeric:tabular-nums}
-tr.suma td{
-  border-top:2px solid var(--tinta); border-bottom:0;
-  font:400 17px var(--display); padding-top:12px;
-}
+tr.suma td{border-top:2px solid var(--tinta); border-bottom:0; font:400 17px var(--display); padding-top:12px}
 tr.suma td:first-child{font:700 14px var(--texto); letter-spacing:.04em; text-transform:uppercase}
 .gris{color:var(--suave)}
 
 .tarjetas{display:grid; grid-template-columns:repeat(auto-fit,minmax(128px,1fr)); gap:10px}
-.tarjeta{padding:14px; border-radius:9px; background:var(--hueco)}
+.tarjeta{padding:15px; border-radius:10px; background:var(--hueco)}
 .tarjeta .rotulo{display:block; margin-bottom:3px}
 .tarjeta .grande{font:400 30px/1.05 var(--display); letter-spacing:-.02em}
+.tarjeta.dinero .grande{color:var(--verde)}
 
 /* ---------- Editor de opciones ---------- */
 .opcion-fila{display:flex; gap:8px; align-items:center}
@@ -202,16 +237,18 @@ tr.suma td:first-child{font:700 14px var(--texto); letter-spacing:.04em; text-tr
 .quitar:hover{background:var(--chile-tenue)}
 
 /* ---------- Avisos ---------- */
-.aviso{padding:12px 14px; border-radius:8px; font-size:14.5px}
+.aviso{padding:12px 14px; border-radius:9px; font-size:14.5px}
 .aviso.mal{background:var(--chile-tenue); color:var(--chile)}
-.aviso.bien{background:var(--acento-tenue); color:var(--acento-tinta)}
+.aviso.bien{background:var(--verde-tenue); color:var(--verde)}
 .oculto{display:none !important}
-.pie{text-align:center; font-size:12.5px; color:var(--suave); padding-top:6px}
+.pie{text-align:center; font-size:12.5px; color:var(--suave); padding-top:2px}
 
-@media (prefers-reduced-motion:reduce){*{animation:none !important; transition:none !important}}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none !important; transition:none !important}
+}
 @media (max-width:400px){
-  .contador button{width:38px; height:38px}
-  .contador .cifra{min-width:38px; font-size:18px}
+  .contador button{width:39px; height:39px}
+  .contador .cifra{min-width:40px; font-size:18px}
 }
 </style>
 </head>
@@ -220,32 +257,59 @@ tr.suma td:first-child{font:700 14px var(--texto); letter-spacing:.04em; text-tr
 <!-- ================= PANTALLA DE QUIEN VOTA ================= -->
 <main class="hoja oculto" id="pantallaVotar">
 
+  <!-- Papel picado, dibujado aquí mismo: sin imágenes que descargar -->
+  <svg class="picado" width="100%" height="34" aria-hidden="true" focusable="false">
+    <defs>
+      <pattern id="papelPicado" width="129" height="34" patternUnits="userSpaceOnUse">
+        <line x1="0" y1="2" x2="129" y2="2" stroke="var(--linea)" stroke-width="2"/>
+        <g fill="var(--rosa)">
+          <path d="M2 2 H41 V21 L21.5 31 L2 21 Z"/>
+        </g>
+        <g fill="var(--sol)">
+          <path d="M45 2 H84 V21 L64.5 31 L45 21 Z"/>
+        </g>
+        <g fill="var(--verde)">
+          <path d="M88 2 H127 V21 L107.5 31 L88 21 Z"/>
+        </g>
+        <g fill="var(--papel)">
+          <circle cx="15" cy="10" r="2.4"/><circle cx="28" cy="10" r="2.4"/><circle cx="21.5" cy="18" r="2.4"/>
+          <circle cx="58" cy="10" r="2.4"/><circle cx="71" cy="10" r="2.4"/><circle cx="64.5" cy="18" r="2.4"/>
+          <circle cx="101" cy="10" r="2.4"/><circle cx="114" cy="10" r="2.4"/><circle cx="107.5" cy="18" r="2.4"/>
+        </g>
+      </pattern>
+    </defs>
+    <rect width="100%" height="34" fill="url(#papelPicado)"/>
+  </svg>
+
   <div class="carta" id="pedidoForm">
-    <div class="marca" style="padding:0">
+    <header class="cabeza-pedido">
+      <span class="sello">Pide lo tuyo</span>
       <h1 id="vTitulo"></h1>
-    </div>
-    <p class="nota" id="vSubtitulo"></p>
+      <p id="vSubtitulo"></p>
+    </header>
 
     <div class="campo">
       <label for="vNombre">Tu nombre</label>
       <input type="text" id="vNombre" placeholder="Nombre y apellido" autocomplete="name" maxlength="50">
+      <p class="pista">Para saber de quién es el pedido a la hora de repartir.</p>
     </div>
 
     <div id="vOpciones"></div>
 
-    <div class="marcador" id="vMarcador">Aún no eliges nada</div>
+    <div class="marcador" id="vMarcador">Todavía no eliges nada</div>
     <div class="aviso mal oculto" id="vAviso"></div>
-    <button type="button" class="btn ancho" id="vListo" disabled>Listo, generar mi comanda</button>
+    <button type="button" class="btn ancho" id="vListo" disabled>Listo, esta es mi comanda</button>
   </div>
 
   <div class="comanda oculto" id="comanda">
-    <span class="sello">Comanda</span>
+    <div class="palomita" aria-hidden="true">&#10003;</div>
+    <span class="sello" style="align-self:center">Comanda</span>
     <h2 id="cNombre"></h2>
     <hr class="rasgado">
     <div class="lista-pedido" id="cLista"></div>
     <hr class="rasgado">
     <p class="nota" style="text-align:center; margin:0 auto">
-      Mándale este folio a quien organiza. Es tu pedido, escrito en corto.
+      Ya casi. Mándale este folio a quien organiza y tu pedido queda anotado.
     </p>
     <div class="folio" id="cFolio"></div>
     <div class="botonera">
@@ -375,7 +439,7 @@ tr.suma td:first-child{font:700 14px var(--texto); letter-spacing:.04em; text-tr
           <span class="rotulo">Piezas</span>
           <span class="grande" id="cuPiezas">0</span>
         </div>
-        <div class="tarjeta">
+        <div class="tarjeta dinero">
           <span class="rotulo">A pagar</span>
           <span class="grande" id="cuDinero">0</span>
         </div>
@@ -582,8 +646,9 @@ function abrirVotacion(carga) {
 function refrescarMarcador() {
   const total = vCant.reduce((a, b) => a + b, 0);
   $("vMarcador").textContent = total === 0
-    ? "Aún no eliges nada"
-    : "Tu pedido: " + total + (total === 1 ? " pieza" : " piezas");
+    ? "Todavía no eliges nada"
+    : "Llevas " + total + (total === 1 ? " pieza" : " piezas");
+  $("vMarcador").classList.toggle("lleno", total > 0);
   $("vListo").disabled = total === 0;
 }
 
