@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<title>Comanda</title>
+<title>Encuestas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Archivo+Black&display=swap">
@@ -298,12 +298,12 @@ tr.suma td:first-child{font:700 14px var(--texto); letter-spacing:.04em; text-tr
 
     <div class="marcador" id="vMarcador">Todavía no eliges nada</div>
     <div class="aviso mal oculto" id="vAviso"></div>
-    <button type="button" class="btn ancho" id="vListo" disabled>Listo, esta es mi comanda</button>
+    <button type="button" class="btn ancho" id="vListo" disabled>Listo, enviar mi pedido</button>
   </div>
 
   <div class="comanda oculto" id="comanda">
     <div class="palomita" aria-hidden="true">&#10003;</div>
-    <span class="sello" style="align-self:center">Comanda</span>
+    <span class="sello" style="align-self:center">Pedido enviado</span>
     <h2 id="cNombre"></h2>
     <hr class="rasgado">
     <div class="lista-pedido" id="cLista"></div>
@@ -327,8 +327,8 @@ tr.suma td:first-child{font:700 14px var(--texto); letter-spacing:.04em; text-tr
 <main class="hoja oculto" id="pantallaOrganizar">
 
   <header class="marca">
-    <h1>Comanda</h1>
-    <span class="glosa">encuestas con cantidades</span>
+    <h1>Encuestas</h1>
+    <span class="glosa">con cantidades</span>
   </header>
 
   <div class="pasos" role="tablist">
@@ -390,7 +390,7 @@ tr.suma td:first-child{font:700 14px var(--texto); letter-spacing:.04em; text-tr
         <button type="button" class="btn calma" id="aCopiar" disabled>Copiar</button>
       </div>
       <p class="nota">
-        Reparte este enlace. Cada persona llenará su comanda y te devolverá un folio.
+        Reparte este enlace. Cada persona anota lo suyo y te llega solo.
       </p>
     </div>
   </section>
@@ -485,7 +485,7 @@ tr.suma td:first-child{font:700 14px var(--texto); letter-spacing:.04em; text-tr
 "use strict";
 
 /* ============================================================
-   Comanda — encuestas con cantidades, sin servidor.
+   Encuestas con cantidades.
    El enlace lleva las opciones; el folio lleva la respuesta;
    los precios y la cuenta no salen nunca de este dispositivo.
    ============================================================ */
