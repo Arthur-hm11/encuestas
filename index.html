@@ -396,17 +396,12 @@ tr.suma td:first-child{font:400 15px var(--display); letter-spacing:.01em}
     <div class="lista-pedido" id="cLista"></div>
     <hr class="rasgado">
     <p class="nota" style="text-align:center; margin:0 auto">
-      Ya casi. Mándale este folio a quien organiza y tu pedido queda anotado.
+      Ya quedó anotado. Quien organiza ya lo está viendo.
     </p>
-    <div class="folio" id="cFolio"></div>
-    <div class="botonera" style="width:100%">
-      <button type="button" class="btn" id="cWhats">Enviar por WhatsApp</button>
-      <button type="button" class="btn calma" id="cCopiar">Copiar folio</button>
-    </div>
     <button type="button" class="btn calma ancho" id="cVolver">Cambiar mi pedido</button>
   </div>
 
-  <p class="pie">Nadie más ve lo que pediste hasta que tú mandes el folio.</p>
+  <p class="pie">Solo quien organiza ve los pedidos.</p>
 </main>
 
 
@@ -477,7 +472,7 @@ tr.suma td:first-child{font:400 15px var(--display); letter-spacing:.01em}
         <button type="button" class="btn calma" id="aCopiar" disabled>Copiar</button>
       </div>
       <p class="nota">
-        Reparte este enlace. Cada persona anota lo suyo y te llega solo.
+        Reparte este enlace. Cada quien anota lo suyo y te llega aquí solo.
       </p>
     </div>
   </section>
@@ -486,33 +481,29 @@ tr.suma td:first-child{font:400 15px var(--display); letter-spacing:.01em}
   <section id="panelRecibir" role="tabpanel" aria-labelledby="tabRecibir" class="oculto" style="flex-direction:column; gap:16px">
 
     <div class="carta">
-      <h2><span class="paso">2</span> Pega los folios que te llegaron</h2>
+      <h2><span class="paso">2</span> Pedidos que van llegando</h2>
       <p class="nota">
-        Puedes pegar la conversación entera de WhatsApp: se sacan solos todos los folios
-        que encuentre. Si alguien manda el suyo dos veces, se queda el último.
+        Se actualiza solo cada 10 segundos mientras tengas esta pantalla abierta.
+        Si alguien vota dos veces, se queda su último pedido.
       </p>
-      <textarea id="rTexto" placeholder="Pega aquí lo que te mandaron..."></textarea>
+      <div id="rEstado" class="marcador">Aún no has creado el enlace</div>
       <div class="aviso oculto" id="rAviso"></div>
-      <button type="button" class="btn ancho" id="rProcesar">Leer folios</button>
+      <button type="button" class="btn calma ancho" id="rActualizar">Buscar pedidos nuevos</button>
+      <div class="rueda"><table>
+        <thead><tr><th>Persona</th><th class="n">Piezas</th><th></th></tr></thead>
+        <tbody id="rLista"></tbody>
+      </table></div>
     </div>
 
     <div class="carta">
-      <h2>Agregar a mano</h2>
-      <p class="nota">Para quien te conteste de palabra en lugar de mandar su folio.</p>
+      <h2>Anotar a mano</h2>
+      <p class="nota">Para quien te conteste de palabra en lugar de entrar al enlace.</p>
       <div class="campo">
         <label for="mNombre">Nombre</label>
         <input type="text" id="mNombre" maxlength="50" placeholder="Nombre y apellido">
       </div>
       <div id="mOpciones"></div>
       <button type="button" class="btn calma ancho" id="mAgregar">Anotar este pedido</button>
-    </div>
-
-    <div class="carta">
-      <h2>Pedidos recibidos</h2>
-      <div class="rueda"><table>
-        <thead><tr><th>Persona</th><th class="n">Piezas</th><th></th></tr></thead>
-        <tbody id="rLista"></tbody>
-      </table></div>
     </div>
   </section>
 
@@ -559,12 +550,12 @@ tr.suma td:first-child{font:400 15px var(--display); letter-spacing:.01em}
       <hr class="rasgado">
       <button type="button" class="btn riesgo ancho" id="cuLimpiar">Borrar los pedidos y empezar otra</button>
       <p class="nota">
-        Descarga el Excel antes de borrar: los pedidos solo viven en este dispositivo.
+        Al borrar se vacían también del buzón, para todos. Descarga el Excel antes.
       </p>
     </div>
   </section>
 
-  <p class="pie">Todo se guarda en este navegador. Nada viaja a ningún servidor.</p>
+  <p class="pie">Los pedidos llegan a un buzón; los precios y la cuenta no salen de aquí.</p>
 </main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -572,16 +563,20 @@ tr.suma td:first-child{font:400 15px var(--display); letter-spacing:.01em}
 "use strict";
 
 /* ============================================================
-   Encuestas con cantidades.
-   El enlace lleva las opciones; el folio lleva la respuesta;
-   los precios y la cuenta no salen nunca de este dispositivo.
+   ENCUESTAS CON CANTIDADES
+   ------------------------------------------------------------
+   El buzon solo guarda nombre y cantidades. Los precios y la
+   cuenta se calculan aqui, en el navegador de quien organiza,
+   y no salen nunca de este dispositivo.
    ============================================================ */
 
-const $ = (id) => document.getElementById(id);
-const LLAVE = "comanda.v1";
-const MARCA_FOLIO = "TK1-";
+const API = "https://encuestas-buzon.popular-metal.workers.dev";
+const LLAVE = "encuestas.v2";
+const CADA = 10000;   // cada cuanto busca pedidos nuevos, en milisegundos
 
-/* ---------- Texto <-> base64 seguro con acentos ---------- */
+const $ = (id) => document.getElementById(id);
+
+/* ---------- Utilidades ---------- */
 function aBase64(texto) {
   const bytes = new TextEncoder().encode(texto);
   let bin = "";
@@ -590,19 +585,23 @@ function aBase64(texto) {
 }
 function deBase64(codigo) {
   const bin = atob(codigo.replace(/-/g, "+").replace(/_/g, "/"));
-  const bytes = Uint8Array.from(bin, (c) => c.charCodeAt(0));
-  return new TextDecoder().decode(bytes);
+  return new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)));
 }
 
-/* Huella de la lista de opciones: sirve para detectar folios
-   de una encuesta distinta a la que está armada ahora. */
+/** Cadena al azar, sin letras que se confundan (O/0, I/l). */
+function alAzar(largo) {
+  const abc = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
+  const bytes = crypto.getRandomValues(new Uint8Array(largo));
+  let s = "";
+  bytes.forEach((b) => (s += abc[b % abc.length]));
+  return s;
+}
+
+/** Huella de la lista de opciones: detecta si cambiaron despues de repartir. */
 function huella(nombres) {
   const s = nombres.join("|");
   let h = 2166136261;
-  for (let i = 0; i < s.length; i++) {
-    h ^= s.charCodeAt(i);
-    h = (h * 16777619) >>> 0;
-  }
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = (h * 16777619) >>> 0; }
   return h.toString(36).slice(0, 4);
 }
 
@@ -611,65 +610,40 @@ const escapar = (t) => {
   d.textContent = t == null ? "" : String(t);
   return d.innerHTML;
 };
-const money = (n, m) => (m || "$") + Number(n || 0).toFixed(2);
+const dinero = (n, m) => (m || "$") + Number(n || 0).toFixed(2);
 
-function avisar(id, texto, clase) {
+function aviso(id, texto, clase) {
   const caja = $(id);
+  if (!caja) return;
   caja.className = "aviso " + (clase || "mal");
   caja.textContent = texto;
   caja.classList.remove("oculto");
 }
-const callar = (id) => $(id).classList.add("oculto");
+const callar = (id) => { const c = $(id); if (c) c.classList.add("oculto"); };
 
 async function copiar(texto, boton) {
   const original = boton.textContent;
-  try {
-    await navigator.clipboard.writeText(texto);
-    boton.textContent = "Copiado";
-  } catch (e) {
-    boton.textContent = "Selecciónalo y copia";
-  }
+  try { await navigator.clipboard.writeText(texto); boton.textContent = "Copiado"; }
+  catch (e) { boton.textContent = "Selecciónalo y copia"; }
   setTimeout(() => (boton.textContent = original), 1800);
 }
 const porWhatsApp = (texto) =>
   window.open("https://wa.me/?text=" + encodeURIComponent(texto), "_blank", "noopener");
 
-/* ============================================================
-   ESTADO (solo lo usa quien organiza)
-   ============================================================ */
-const PREDETERMINADO = {
-  titulo: "Tacos de canasta",
-  subtitulo: "Anota cuántos quieres de cada uno",
-  maximo: 10,
-  moneda: "$",
-  opciones: [
-    { nombre: "Chicharrón", precio: 12 },
-    { nombre: "Papa con carne", precio: 12 },
-    { nombre: "Adobo", precio: 15 },
-    { nombre: "Frijol", precio: 10 }
-  ]
-};
-
-let ST = { cfg: null, pedidos: [] };
-
-function cargarEstado() {
+/** Habla con el buzon. Devuelve los datos o lanza un error con mensaje claro. */
+async function buzon(ruta, opciones) {
+  let r;
   try {
-    const crudo = localStorage.getItem(LLAVE);
-    if (crudo) {
-      const g = JSON.parse(crudo);
-      ST.cfg = g.cfg || structuredClone(PREDETERMINADO);
-      ST.pedidos = Array.isArray(g.pedidos) ? g.pedidos : [];
-      return;
-    }
-  } catch (e) { /* si el navegador bloquea el guardado, seguimos en memoria */ }
-  ST.cfg = structuredClone(PREDETERMINADO);
-  ST.pedidos = [];
+    r = await fetch(API + ruta, opciones);
+  } catch (e) {
+    throw new Error("Sin conexión. Revisa tu internet e intenta otra vez.");
+  }
+  let d;
+  try { d = await r.json(); }
+  catch (e) { throw new Error("El buzón está saturado un momento. Intenta en unos segundos."); }
+  if (!d.ok) throw new Error(d.error || "Algo salió mal.");
+  return d;
 }
-function guardarEstado() {
-  try { localStorage.setItem(LLAVE, JSON.stringify(ST)); } catch (e) {}
-}
-
-const nombresDe = (cfg) => cfg.opciones.map((o) => o.nombre);
 
 /* ============================================================
    PANTALLA DE QUIEN VOTA
@@ -679,14 +653,10 @@ let vCant = [];
 
 function abrirVotacion(carga) {
   let d;
-  try {
-    d = JSON.parse(deBase64(carga));
-  } catch (e) {
-    return false;
-  }
-  if (!d || !Array.isArray(d.o) || d.o.length === 0) return false;
+  try { d = JSON.parse(deBase64(carga)); } catch (e) { return false; }
+  if (!d || !Array.isArray(d.o) || d.o.length === 0 || !d.i) return false;
 
-  vCfg = { titulo: d.t || "Encuesta", subtitulo: d.s || "", maximo: d.m || 10, opciones: d.o, k: d.k };
+  vCfg = { id: d.i, titulo: d.t || "Encuesta", subtitulo: d.s || "", maximo: d.m || 10, opciones: d.o };
   vCant = vCfg.opciones.map(() => 0);
 
   document.title = vCfg.titulo;
@@ -694,18 +664,16 @@ function abrirVotacion(carga) {
   $("vSubtitulo").textContent = vCfg.subtitulo;
 
   $("vOpciones").innerHTML = vCfg.opciones
-    .map(
-      (nombre, i) =>
-        '<div class="renglon" id="vr' + i + '">' +
-          '<span class="punto" aria-hidden="true"></span>' +
-          '<span class="que">' + escapar(nombre) + "</span>" +
-          '<span class="contador">' +
-            '<button type="button" data-paso="-1" data-i="' + i + '" aria-label="Quitar uno de ' + escapar(nombre) + '">&minus;</button>' +
-            '<span class="cifra nada" id="vc' + i + '">0</span>' +
-            '<button type="button" data-paso="1" data-i="' + i + '" aria-label="Agregar uno de ' + escapar(nombre) + '">+</button>' +
-          "</span>" +
-        "</div>"
-    )
+    .map((nombre, i) =>
+      '<div class="renglon" id="vr' + i + '">' +
+        '<span class="punto" aria-hidden="true"></span>' +
+        '<span class="que">' + escapar(nombre) + "</span>" +
+        '<span class="contador">' +
+          '<button type="button" data-paso="-1" data-i="' + i + '" aria-label="Quitar uno de ' + escapar(nombre) + '">&minus;</button>' +
+          '<span class="cifra nada" id="vc' + i + '">0</span>' +
+          '<button type="button" data-paso="1" data-i="' + i + '" aria-label="Agregar uno de ' + escapar(nombre) + '">+</button>' +
+        "</span>" +
+      "</div>")
     .join("");
 
   $("vOpciones").addEventListener("click", (ev) => {
@@ -719,20 +687,17 @@ function abrirVotacion(carga) {
     const celda = $("vc" + i);
     celda.textContent = nuevo;
     celda.classList.toggle("nada", nuevo === 0);
-
-    // Un brinco cortito para que se note que sí registró
     celda.classList.remove("brinca");
-    void celda.offsetWidth;          // obliga al navegador a reiniciar la animación
+    void celda.offsetWidth;               // reinicia la animación
     celda.classList.add("brinca");
 
     $("vr" + i).classList.toggle("activo", nuevo > 0);
-
     refrescarMarcador();
     callar("vAviso");
   });
 
   try {
-    const previo = localStorage.getItem("comanda.nombre");
+    const previo = localStorage.getItem("encuestas.nombre");
     if (previo) $("vNombre").value = previo;
   } catch (e) {}
 
@@ -749,47 +714,57 @@ function refrescarMarcador() {
   $("vListo").disabled = total === 0;
 }
 
-function generarComanda() {
+async function enviarPedido() {
   const nombre = $("vNombre").value.trim().replace(/\s+/g, " ");
   if (nombre.length < 2) {
-    avisar("vAviso", "Escribe tu nombre para que sepan de quién es el pedido.");
+    aviso("vAviso", "Escribe tu nombre para que sepan de quién es el pedido.");
     $("vNombre").focus();
     return;
   }
-  try { localStorage.setItem("comanda.nombre", nombre); } catch (e) {}
 
-  const folio = MARCA_FOLIO + aBase64(JSON.stringify([vCfg.k, nombre, vCant]));
+  const boton = $("vListo");
+  boton.disabled = true;
+  boton.textContent = "Enviando...";
+  callar("vAviso");
 
-  $("cNombre").textContent = nombre;
-  $("cLista").innerHTML = vCfg.opciones
-    .map((n, i) => (vCant[i] > 0
-      ? "<div><span>" + escapar(n) + '</span><span class="cant">' + vCant[i] + "</span></div>"
-      : ""))
-    .join("") +
-    '<div style="border-top:1px solid var(--linea); padding-top:5px; margin-top:3px">' +
-      "<span><strong>Total</strong></span>" +
-      '<span class="cant">' + vCant.reduce((a, b) => a + b, 0) + "</span></div>";
-  $("cFolio").textContent = folio;
+  try {
+    await buzon("/voto", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: vCfg.id, nombre, cants: vCant })
+    });
 
-  $("cWhats").onclick = () =>
-    porWhatsApp(vCfg.titulo + " — " + nombre + "\nMi folio:\n" + folio);
-  $("cCopiar").onclick = (ev) => copiar(folio, ev.currentTarget);
+    try { localStorage.setItem("encuestas.nombre", nombre); } catch (e) {}
 
-  $("pedidoForm").classList.add("oculto");
-  $("comanda").classList.remove("oculto");
-  window.scrollTo(0, 0);
-  lluviaDePapel();
+    $("cNombre").textContent = nombre;
+    $("cLista").innerHTML =
+      vCfg.opciones
+        .map((n, i) => (vCant[i] > 0
+          ? "<div><span>" + escapar(n) + '</span><span class="cant">' + vCant[i] + "</span></div>"
+          : ""))
+        .join("") +
+      '<div style="border-top:1px solid var(--linea); padding-top:7px; margin-top:3px">' +
+        "<span><strong>Total</strong></span>" +
+        '<span class="cant">' + vCant.reduce((a, b) => a + b, 0) + "</span></div>";
+
+    $("pedidoForm").classList.add("oculto");
+    $("comanda").classList.remove("oculto");
+    window.scrollTo(0, 0);
+    lluviaDePapel();
+  } catch (e) {
+    aviso("vAviso", e.message);
+    boton.disabled = false;
+    boton.textContent = "Listo, enviar mi pedido";
+  }
 }
 
-/** Cae papel picado un momento. Puro adorno: si algo falla, se ignora. */
+/** Cae papel picado un momento. Puro adorno. */
 function lluviaDePapel() {
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
   const colores = ["var(--rosa)", "var(--sol)", "var(--verde)", "var(--chile)"];
   const cielo = document.createElement("div");
   cielo.className = "fiesta";
   cielo.setAttribute("aria-hidden", "true");
-
   for (let i = 0; i < 26; i++) {
     const trozo = document.createElement("i");
     trozo.style.left = Math.random() * 100 + "%";
@@ -801,36 +776,72 @@ function lluviaDePapel() {
     if (i % 3 === 1) trozo.style.clipPath = "polygon(50% 0, 100% 100%, 0 100%)";
     cielo.appendChild(trozo);
   }
-
   document.body.appendChild(cielo);
   setTimeout(() => cielo.remove(), 4200);
 }
 
 /* ============================================================
-   QUIEN ORGANIZA — 1. ARMAR
+   QUIEN ORGANIZA
    ============================================================ */
+const PREDETERMINADO = {
+  titulo: "Tacos de canasta",
+  subtitulo: "Anota cuántos quieres de cada uno",
+  maximo: 10,
+  moneda: "$",
+  id: null,          // identificador de la encuesta en el buzón
+  clave: null,       // permiso de lectura; se queda en este navegador
+  huella: null,      // huella de las opciones con las que se repartió
+  opciones: [
+    { nombre: "Chicharrón", precio: 12 },
+    { nombre: "Papa con carne", precio: 12 },
+    { nombre: "Adobo", precio: 15 },
+    { nombre: "Frijol", precio: 10 }
+  ]
+};
+
+let ST = { cfg: null, pedidos: [] };
+let reloj = null;
+
+function cargarEstado() {
+  try {
+    const crudo = localStorage.getItem(LLAVE);
+    if (crudo) {
+      const g = JSON.parse(crudo);
+      ST.cfg = Object.assign(structuredClone(PREDETERMINADO), g.cfg || {});
+      ST.pedidos = Array.isArray(g.pedidos) ? g.pedidos : [];
+      return;
+    }
+  } catch (e) {}
+  ST.cfg = structuredClone(PREDETERMINADO);
+  ST.pedidos = [];
+}
+function guardarEstado() {
+  try { localStorage.setItem(LLAVE, JSON.stringify(ST)); } catch (e) {}
+}
+
+const nombresDe = (cfg) => cfg.opciones.map((o) => o.nombre);
+
+/* ---------- 1. ARMAR ---------- */
 function pintarArmar() {
   $("aTitulo").value = ST.cfg.titulo;
   $("aSubtitulo").value = ST.cfg.subtitulo;
   $("aMaximo").value = ST.cfg.maximo;
   $("aMoneda").value = ST.cfg.moneda;
   pintarOpciones();
+  if (ST.cfg.id) mostrarEnlace();
 }
 
 function pintarOpciones() {
   $("aOpciones").innerHTML = ST.cfg.opciones
-    .map(
-      (o, i) =>
-        '<div class="opcion-fila">' +
-          '<input type="text" data-c="nombre" data-i="' + i + '" value="' + escapar(o.nombre) + '" maxlength="34" placeholder="Nombre de la opción">' +
-          '<input type="number" data-c="precio" data-i="' + i + '" value="' + o.precio + '" min="0" step="0.5" aria-label="Precio">' +
-          '<button type="button" class="quitar" data-quitar="' + i + '" aria-label="Quitar ' + escapar(o.nombre) + '">&times;</button>' +
-        "</div>"
-    )
+    .map((o, i) =>
+      '<div class="opcion-fila">' +
+        '<input type="text" data-c="nombre" data-i="' + i + '" value="' + escapar(o.nombre) + '" maxlength="34" placeholder="Nombre de la opción">' +
+        '<input type="number" data-c="precio" data-i="' + i + '" value="' + o.precio + '" min="0" step="0.5" aria-label="Precio">' +
+        '<button type="button" class="quitar" data-quitar="' + i + '" aria-label="Quitar ' + escapar(o.nombre) + '">&times;</button>' +
+      "</div>")
     .join("");
 }
 
-/** Copia a ST.cfg lo que hay escrito en pantalla. */
 function leerArmar() {
   ST.cfg.titulo = $("aTitulo").value.trim() || "Encuesta";
   ST.cfg.subtitulo = $("aSubtitulo").value.trim();
@@ -845,162 +856,187 @@ function leerArmar() {
   guardarEstado();
 }
 
-function crearEnlace() {
-  leerArmar();
-  const nombres = nombresDe(ST.cfg).filter((n) => n.length > 0);
-
-  if (nombres.length === 0) {
-    avisar("aAviso", "Escribe al menos una opción antes de crear el enlace.");
-    return;
-  }
-  const repetido = nombres.find((n, i) => nombres.findIndex((x) => x.toLowerCase() === n.toLowerCase()) !== i);
-  if (repetido) {
-    avisar("aAviso", 'La opción "' + repetido + '" está repetida. Cámbiale el nombre.');
-    return;
-  }
-  callar("aAviso");
-
-  ST.cfg.opciones = ST.cfg.opciones.filter((o) => o.nombre.length > 0);
-  guardarEstado();
-  pintarOpciones();
-
-  const carga = aBase64(JSON.stringify({
+const enlaceDeVotacion = () =>
+  location.origin + location.pathname + "#v=" + aBase64(JSON.stringify({
+    i: ST.cfg.id,
     t: ST.cfg.titulo,
     s: ST.cfg.subtitulo,
     m: ST.cfg.maximo,
-    k: huella(nombres),
-    o: nombres
+    o: nombresDe(ST.cfg)
   }));
 
-  const base = location.origin + location.pathname;
-  const enlace = base + "#v=" + carga;
-
+function mostrarEnlace() {
+  const enlace = enlaceDeVotacion();
   $("aEnlace").textContent = enlace;
   $("aCopiar").disabled = false;
   $("aWhats").disabled = false;
   $("aCopiar").onclick = (ev) => copiar(enlace, ev.currentTarget);
   $("aWhats").onclick = () =>
     porWhatsApp(ST.cfg.titulo + "\n" + (ST.cfg.subtitulo || "Anota lo tuyo aquí") + "\n" + enlace);
-
-  pintarManual();
-  refrescarTodo();
 }
 
-/* ============================================================
-   2. RECIBIR
-   ============================================================ */
-function leerFolios() {
-  const texto = $("rTexto").value;
-  const encontrados = texto.match(new RegExp(MARCA_FOLIO + "[A-Za-z0-9_-]+", "g")) || [];
+async function crearEnlace() {
+  leerArmar();
+  const nombres = nombresDe(ST.cfg).filter((n) => n.length > 0);
 
-  if (encontrados.length === 0) {
-    avisar("rAviso", "No encontré ningún folio en ese texto. Los folios empiezan con " + MARCA_FOLIO);
-    return;
+  if (nombres.length === 0) { aviso("aAviso", "Escribe al menos una opción."); return; }
+  const repetido = nombres.find((n, i) =>
+    nombres.findIndex((x) => x.toLowerCase() === n.toLowerCase()) !== i);
+  if (repetido) { aviso("aAviso", 'La opción "' + repetido + '" está repetida.'); return; }
+  callar("aAviso");
+
+  ST.cfg.opciones = ST.cfg.opciones.filter((o) => o.nombre.length > 0);
+  const nuevaHuella = huella(nombresDe(ST.cfg));
+
+  // Si cambiaron las opciones, hace falta una encuesta nueva para que
+  // los pedidos viejos no se mezclen con los nuevos.
+  const cambiaron = ST.cfg.huella && ST.cfg.huella !== nuevaHuella;
+  if (cambiaron && ST.pedidos.length > 0) {
+    if (!window.confirm(
+      "Cambiaste las opciones. Se creará una encuesta nueva y los " +
+      ST.pedidos.length + " pedidos actuales se quedarán fuera.\n\n" +
+      "¿Descargaste ya el Excel?")) return;
   }
 
-  const huellaActual = huella(nombresDe(ST.cfg));
-  let nuevos = 0, repetidos = 0, ilegibles = 0, ajenos = 0;
+  const boton = $("aCrear");
+  boton.disabled = true;
+  boton.textContent = "Creando...";
 
-  encontrados.forEach((folio) => {
-    let d;
-    try {
-      d = JSON.parse(deBase64(folio.slice(MARCA_FOLIO.length)));
-    } catch (e) { ilegibles++; return; }
-
-    if (!Array.isArray(d) || d.length !== 3 || typeof d[1] !== "string" || !Array.isArray(d[2])) {
-      ilegibles++; return;
+  try {
+    if (!ST.cfg.id || cambiaron) {
+      ST.cfg.id = alAzar(14);
+      ST.cfg.clave = alAzar(20);
+      ST.pedidos = [];
     }
-    if (d[0] !== huellaActual) { ajenos++; return; }
+    ST.cfg.huella = nuevaHuella;
 
-    const nombre = d[1].trim().replace(/\s+/g, " ").slice(0, 50);
-    const cants = ST.cfg.opciones.map((_, i) => Math.max(0, parseInt(d[2][i], 10) || 0));
-    const clave = nombre.toLowerCase();
-    const yaEsta = ST.pedidos.findIndex((p) => p.nombre.toLowerCase() === clave);
+    await buzon("/crear", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: ST.cfg.id, clave: ST.cfg.clave })
+    });
 
-    const pedido = { nombre, cants, cuando: new Date().toISOString() };
-    if (yaEsta >= 0) { ST.pedidos[yaEsta] = pedido; repetidos++; }
-    else { ST.pedidos.push(pedido); nuevos++; }
-  });
+    guardarEstado();
+    pintarOpciones();
+    pintarManual();
+    mostrarEnlace();
+    refrescarTodo();
+    arrancarReloj();
+    aviso("aAviso", "Listo. Reparte el enlace y los pedidos irán apareciendo solos.", "bien");
+  } catch (e) {
+    aviso("aAviso", e.message);
+  } finally {
+    boton.disabled = false;
+    boton.textContent = "Crear enlace";
+  }
+}
 
-  guardarEstado();
-  refrescarTodo();
-  $("rTexto").value = "";
+/* ---------- 2. PEDIDOS QUE LLEGAN ---------- */
+async function traerPedidos(silencioso) {
+  if (!ST.cfg.id || !ST.cfg.clave) return;
+  if (!silencioso) { $("rEstado").textContent = "Buscando..."; callar("rAviso"); }
 
-  const partes = [];
-  if (nuevos) partes.push(nuevos + (nuevos === 1 ? " pedido nuevo" : " pedidos nuevos"));
-  if (repetidos) partes.push(repetidos + (repetidos === 1 ? " actualizado" : " actualizados"));
-  if (ajenos) partes.push(ajenos + " de otra encuesta (no se " + (ajenos === 1 ? "contó)" : "contaron)"));
-  if (ilegibles) partes.push(ilegibles + (ilegibles === 1 ? " que no se entendió" : " que no se entendieron"));
+  try {
+    const d = await buzon("/votos?id=" + encodeURIComponent(ST.cfg.id) +
+                          "&clave=" + encodeURIComponent(ST.cfg.clave));
+    const cuantos = ST.cfg.opciones.length;
+    ST.pedidos = d.votos.map((v) => ({
+      nombre: String(v.nombre || ""),
+      cants: Array.from({ length: cuantos }, (_, i) => parseInt(v.cants[i], 10) || 0),
+      cuando: v.cuando
+    }));
+    guardarEstado();
+    refrescarTodo();
+    if (!silencioso) callar("rAviso");
+  } catch (e) {
+    if (!silencioso) aviso("rAviso", e.message);
+    refrescarTodo();
+  }
+}
 
-  avisar("rAviso", partes.join(", ") + ".", nuevos || repetidos ? "bien" : "mal");
+function arrancarReloj() {
+  if (reloj) clearInterval(reloj);
+  if (!ST.cfg.id) return;
+  reloj = setInterval(() => traerPedidos(true), CADA);
 }
 
 function pintarManual() {
   $("mOpciones").innerHTML = ST.cfg.opciones
-    .map(
-      (o, i) =>
-        '<div class="renglon">' +
-          '<span class="que">' + escapar(o.nombre) + "</span>" +
-          '<input type="number" id="mq' + i + '" value="0" min="0" max="' + ST.cfg.maximo +
-            '" style="flex:0 0 76px; text-align:right" aria-label="Cantidad de ' + escapar(o.nombre) + '">' +
-        "</div>"
-    )
+    .map((o, i) =>
+      '<div class="renglon">' +
+        '<span class="punto" aria-hidden="true"></span>' +
+        '<span class="que">' + escapar(o.nombre) + "</span>" +
+        '<input type="number" id="mq' + i + '" value="0" min="0" max="' + ST.cfg.maximo +
+          '" style="flex:0 0 78px; text-align:right" aria-label="Cantidad de ' + escapar(o.nombre) + '">' +
+      "</div>")
     .join("");
 }
 
-function agregarAMano() {
+async function anotarAMano() {
+  if (!ST.cfg.id) { aviso("rAviso", "Primero crea el enlace en el paso 1."); return; }
+
   const nombre = $("mNombre").value.trim().replace(/\s+/g, " ");
-  if (nombre.length < 2) { avisar("rAviso", "Escribe el nombre de la persona."); return; }
+  if (nombre.length < 2) { aviso("rAviso", "Escribe el nombre de la persona."); return; }
 
   const cants = ST.cfg.opciones.map((_, i) =>
     Math.min(ST.cfg.maximo, Math.max(0, parseInt($("mq" + i).value, 10) || 0)));
-
   if (cants.reduce((a, b) => a + b, 0) === 0) {
-    avisar("rAviso", "Anota al menos una pieza para " + nombre + ".");
-    return;
+    aviso("rAviso", "Anota al menos una pieza para " + nombre + "."); return;
   }
 
-  const clave = nombre.toLowerCase();
-  const yaEsta = ST.pedidos.findIndex((p) => p.nombre.toLowerCase() === clave);
-  const pedido = { nombre, cants, cuando: new Date().toISOString() };
-  if (yaEsta >= 0) ST.pedidos[yaEsta] = pedido; else ST.pedidos.push(pedido);
-
-  guardarEstado();
-  refrescarTodo();
-  $("mNombre").value = "";
-  pintarManual();
-  avisar("rAviso", "Anotado el pedido de " + nombre + ".", "bien");
+  const boton = $("mAgregar");
+  boton.disabled = true;
+  boton.textContent = "Anotando...";
+  try {
+    await buzon("/voto", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: ST.cfg.id, nombre, cants })
+    });
+    $("mNombre").value = "";
+    pintarManual();
+    await traerPedidos(true);
+    aviso("rAviso", "Anotado el pedido de " + nombre + ".", "bien");
+  } catch (e) {
+    aviso("rAviso", e.message);
+  } finally {
+    boton.disabled = false;
+    boton.textContent = "Anotar este pedido";
+  }
 }
 
 function pintarRecibidos() {
   const cuerpo = $("rLista");
-  if (ST.pedidos.length === 0) {
-    cuerpo.innerHTML = '<tr><td colspan="3" class="gris">Todavía no llega ningún pedido.</td></tr>';
-  } else {
-    cuerpo.innerHTML = ST.pedidos
-      .map((p, i) =>
-        "<tr><td>" + escapar(p.nombre) + '</td><td class="n">' + p.cants.reduce((a, b) => a + b, 0) +
-        '</td><td style="text-align:right"><button type="button" class="quitar" data-borrar="' + i +
-        '" aria-label="Quitar el pedido de ' + escapar(p.nombre) + '">&times;</button></td></tr>')
-      .join("");
-  }
+  cuerpo.innerHTML = ST.pedidos.length === 0
+    ? '<tr><td colspan="3" class="gris">Todavía no llega ningún pedido.</td></tr>'
+    : ST.pedidos.map((p) =>
+        "<tr><td>" + escapar(p.nombre) + '</td><td class="n">' +
+        p.cants.reduce((a, b) => a + b, 0) + "</td><td></td></tr>").join("");
 
   const globo = $("globoRecibidos");
   globo.textContent = ST.pedidos.length;
   globo.classList.toggle("oculto", ST.pedidos.length === 0);
+
+  const estado = $("rEstado");
+  if (!ST.cfg.id) {
+    estado.textContent = "Aún no has creado el enlace";
+    estado.classList.remove("lleno");
+  } else {
+    estado.textContent = ST.pedidos.length === 0
+      ? "Esperando pedidos..."
+      : ST.pedidos.length + (ST.pedidos.length === 1 ? " pedido recibido" : " pedidos recibidos");
+    estado.classList.toggle("lleno", ST.pedidos.length > 0);
+  }
 }
 
-/* ============================================================
-   3. LA CUENTA
-   ============================================================ */
+/* ---------- 3. LA CUENTA ---------- */
 function calcular() {
-  const m = ST.cfg.moneda;
   const renglones = ST.cfg.opciones.map((o, i) => {
     const cantidad = ST.pedidos.reduce((s, p) => s + (p.cants[i] || 0), 0);
     return { nombre: o.nombre, precio: o.precio, cantidad, importe: cantidad * o.precio };
   });
   return {
-    moneda: m,
+    moneda: ST.cfg.moneda,
     renglones,
     piezas: renglones.reduce((s, r) => s + r.cantidad, 0),
     dinero: renglones.reduce((s, r) => s + r.importe, 0),
@@ -1013,40 +1049,35 @@ function pintarCuenta() {
 
   $("cuTitulo").textContent = ST.cfg.titulo;
   $("cuPiezas").textContent = c.piezas;
-  $("cuDinero").textContent = money(c.dinero, c.moneda);
+  $("cuDinero").textContent = dinero(c.dinero, c.moneda);
   $("cuGente").textContent = c.gente;
 
   $("cuCuerpo").innerHTML =
-    c.renglones
-      .map((r) =>
-        "<tr><td>" + escapar(r.nombre) +
-        '</td><td class="n' + (r.cantidad ? '"' : ' gris"') + ">" + r.cantidad +
-        '</td><td class="n gris">' + money(r.precio, c.moneda) +
-        '</td><td class="n">' + money(r.importe, c.moneda) + "</td></tr>")
-      .join("") +
+    c.renglones.map((r) =>
+      "<tr><td>" + escapar(r.nombre) +
+      '</td><td class="n' + (r.cantidad ? '"' : ' gris"') + ">" + r.cantidad +
+      '</td><td class="n gris">' + dinero(r.precio, c.moneda) +
+      '</td><td class="n">' + dinero(r.importe, c.moneda) + "</td></tr>").join("") +
     '<tr class="suma"><td>Total</td><td class="n">' + c.piezas +
-    '</td><td></td><td class="n">' + money(c.dinero, c.moneda) + "</td></tr>";
+    '</td><td></td><td class="n">' + dinero(c.dinero, c.moneda) + "</td></tr>";
 
+  const nombres = ST.cfg.opciones.map((o) => o.nombre);
   $("cuDetalleCabeza").innerHTML =
     "<th>Persona</th>" +
-    ST.cfg.opciones.map((o) => '<th class="n">' + escapar(o.nombre) + "</th>").join("") +
+    nombres.map((n) => '<th class="n">' + escapar(n) + "</th>").join("") +
     '<th class="n">Total</th>';
 
   $("cuDetalleCuerpo").innerHTML = ST.pedidos.length === 0
-    ? '<tr><td colspan="' + (ST.cfg.opciones.length + 2) + '" class="gris">Aquí aparecerá quién pidió qué.</td></tr>'
-    : ST.pedidos
-        .map((p) =>
-          "<tr><td>" + escapar(p.nombre) + "</td>" +
-          p.cants.map((n) => '<td class="n' + (n ? '"' : ' gris"') + ">" + n + "</td>").join("") +
-          '<td class="n"><strong>' + p.cants.reduce((a, b) => a + b, 0) + "</strong></td></tr>")
-        .join("");
+    ? '<tr><td colspan="' + (nombres.length + 2) + '" class="gris">Aquí aparecerá quién pidió qué.</td></tr>'
+    : ST.pedidos.map((p) =>
+        "<tr><td>" + escapar(p.nombre) + "</td>" +
+        p.cants.map((n) => '<td class="n' + (n ? '"' : ' gris"') + ">" + n + "</td>").join("") +
+        '<td class="n"><strong>' + p.cants.reduce((a, b) => a + b, 0) + "</strong></td></tr>").join("");
 }
 
 const refrescarTodo = () => { pintarRecibidos(); pintarCuenta(); };
 
-/* ============================================================
-   EXCEL
-   ============================================================ */
+/* ---------- EXCEL ---------- */
 function armarLibro() {
   const c = calcular();
 
@@ -1073,19 +1104,15 @@ function nombreArchivo() {
 
 async function descargarExcel() {
   callar("cuAviso");
-  if (ST.pedidos.length === 0) {
-    avisar("cuAviso", "Todavía no hay pedidos que guardar.");
-    return;
-  }
+  if (ST.pedidos.length === 0) { aviso("cuAviso", "Todavía no hay pedidos que guardar."); return; }
   if (typeof XLSX === "undefined") {
-    avisar("cuAviso", "No se pudo cargar el generador de Excel. Revisa tu conexión y recarga la página.");
+    aviso("cuAviso", "No se pudo cargar el generador de Excel. Recarga la página.");
     return;
   }
 
   const libro = armarLibro();
   const archivo = nombreArchivo();
 
-  // Dentro de claude.ai la descarga pasa por el visor; fuera, va directa.
   let guardador = null;
   try {
     if (window.claude && typeof window.claude.use === "function") {
@@ -1097,25 +1124,23 @@ async function descargarExcel() {
     try {
       const bytes = XLSX.write(libro, { type: "array", bookType: "xlsx" });
       await guardador.save({ filename: archivo, data: new Blob([bytes]) });
-      avisar("cuAviso", "Excel guardado como " + archivo, "bien");
+      aviso("cuAviso", "Excel guardado como " + archivo, "bien");
     } catch (e) {
       if (e && e.code === "declined") return;
-      avisar("cuAviso", "No se pudo guardar el archivo. Intenta otra vez.");
+      aviso("cuAviso", "No se pudo guardar el archivo. Intenta otra vez.");
     }
     return;
   }
 
   try {
     XLSX.writeFile(libro, archivo);
-    avisar("cuAviso", "Excel descargado: " + archivo, "bien");
+    aviso("cuAviso", "Excel descargado: " + archivo, "bien");
   } catch (e) {
-    avisar("cuAviso", "Tu navegador bloqueó la descarga. Prueba en otro navegador.");
+    aviso("cuAviso", "Tu navegador bloqueó la descarga. Prueba en otro navegador.");
   }
 }
 
-/* ============================================================
-   PASOS Y BOTONES
-   ============================================================ */
+/* ---------- PASOS Y BOTONES ---------- */
 const PANELES = [["tabArmar", "panelArmar"], ["tabRecibir", "panelRecibir"], ["tabCuenta", "panelCuenta"]];
 
 function mostrarPaso(idTab) {
@@ -1132,9 +1157,13 @@ function conectarOrganizar() {
   pintarArmar();
   pintarManual();
   refrescarTodo();
+  if (ST.cfg.id) { traerPedidos(true); arrancarReloj(); }
 
   PANELES.forEach(([tab]) =>
-    $(tab).addEventListener("click", () => { leerArmar(); pintarManual(); refrescarTodo(); mostrarPaso(tab); }));
+    $(tab).addEventListener("click", () => {
+      leerArmar(); pintarManual(); refrescarTodo(); mostrarPaso(tab);
+      if (tab === "tabRecibir" || tab === "tabCuenta") traerPedidos(true);
+    }));
 
   $("aAgregar").addEventListener("click", () => {
     leerArmar();
@@ -1158,44 +1187,47 @@ function conectarOrganizar() {
   });
 
   $("aCrear").addEventListener("click", crearEnlace);
-  $("rProcesar").addEventListener("click", leerFolios);
-  $("mAgregar").addEventListener("click", agregarAMano);
-
-  $("rLista").addEventListener("click", (ev) => {
-    const b = ev.target.closest("[data-borrar]");
-    if (!b) return;
-    ST.pedidos.splice(+b.dataset.borrar, 1);
-    guardarEstado();
-    refrescarTodo();
-  });
-
+  $("rActualizar").addEventListener("click", () => traerPedidos(false));
+  $("mAgregar").addEventListener("click", anotarAMano);
   $("cuExcel").addEventListener("click", descargarExcel);
 
-  $("cuLimpiar").addEventListener("click", () => {
-    if (ST.pedidos.length === 0) { avisar("cuAviso", "No hay pedidos que borrar."); return; }
+  $("cuLimpiar").addEventListener("click", async () => {
+    if (ST.pedidos.length === 0) { aviso("cuAviso", "No hay pedidos que borrar."); return; }
     if (!window.confirm("Se borrarán los " + ST.pedidos.length +
-        " pedidos de este dispositivo. ¿Descargaste ya el Excel?")) return;
-    ST.pedidos = [];
-    guardarEstado();
-    refrescarTodo();
-    avisar("cuAviso", "Listo. Ya puedes armar la siguiente encuesta.", "bien");
+        " pedidos, también del buzón. ¿Descargaste ya el Excel?")) return;
+    try {
+      await buzon("/vaciar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: ST.cfg.id, clave: ST.cfg.clave })
+      });
+      ST.pedidos = [];
+      guardarEstado();
+      refrescarTodo();
+      aviso("cuAviso", "Listo. Ya puedes armar la siguiente encuesta.", "bien");
+    } catch (e) {
+      aviso("cuAviso", e.message);
+    }
+  });
+
+  // Al volver a la pestaña del navegador, buscar de inmediato
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden && ST.cfg.id) traerPedidos(true);
   });
 
   $("pantallaOrganizar").classList.remove("oculto");
 }
 
-/* ============================================================
-   ARRANQUE
-   ============================================================ */
-$("vListo").addEventListener("click", generarComanda);
+/* ---------- ARRANQUE ---------- */
+$("vListo").addEventListener("click", enviarPedido);
 $("cVolver").addEventListener("click", () => {
   $("comanda").classList.add("oculto");
   $("pedidoForm").classList.remove("oculto");
+  $("vListo").disabled = false;
+  $("vListo").textContent = "Listo, enviar mi pedido";
   window.scrollTo(0, 0);
 });
 
-// Si el ancla cambia sin recargar (alguien pega el enlace estando ya aqui),
-// volvemos a arrancar para que aparezca la pantalla correcta.
 window.addEventListener("hashchange", () => location.reload());
 
 (function arrancar() {
